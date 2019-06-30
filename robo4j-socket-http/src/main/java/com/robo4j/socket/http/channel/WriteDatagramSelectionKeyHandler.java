@@ -40,19 +40,7 @@ public class WriteDatagramSelectionKeyHandler implements SelectionKeyHandler {
 
 	@Override
 	public SelectionKey handle() {
-//		final DatagramChannel channel = (DatagramChannel) key.channel();
-//		ByteBuffer buffer = ByteBuffer.allocate(serverContext.getPropertySafe(Integer.class, PROPERTY_BUFFER_CAPACITY));
 		final DatagramResponseProcess responseProcess = outBuffers.get(key);
-
-//		buffer.clear();
-//		buffer.put("ACCEPTED".getBytes());
-//		buffer.flip();
-//		try {
-//			channel.write(buffer);
-//		} catch (IOException e) {
-//			throw new SocketException("handle", e);
-//		}
-
 		RoboReference<Object> reference  = responseProcess.getTarget();
 		Object responseMessage = responseProcess.getResult();
 		reference.sendMessage(responseMessage);
