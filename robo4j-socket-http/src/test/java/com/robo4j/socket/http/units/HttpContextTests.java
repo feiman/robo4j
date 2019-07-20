@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -59,7 +60,7 @@ class HttpContextTests {
 
 		System.out.println("context:" + context);
 		assertNotNull(context);
-		assertTrue(!context.isEmpty());
+		assertFalse(context.isEmpty());
 		assertTrue(context.containsPath(new PathHttpMethod(Utf8Constant.UTF8_SOLIDUS, HttpMethod.GET)));
 
 	}
@@ -93,7 +94,7 @@ class HttpContextTests {
 		System.out.println("context: " + context);
 		assertNotNull(context);
 		assertNotNull(context.getPathConfig(basicGet));
-		assertTrue(!context.getPathConfig(basicGet).getCallbacks().isEmpty());
+		assertFalse(context.getPathConfig(basicGet).getCallbacks().isEmpty());
 		assertEquals(HttpMethod.GET, context.getPathConfig(basicGet).getMethod());
 		assertEquals(1, context.getPathConfig(basicGet).getCallbacks().size());
 		assertEquals(StringConsumer.NAME, context.getPathConfig(basicGet).getCallbacks().get(0));

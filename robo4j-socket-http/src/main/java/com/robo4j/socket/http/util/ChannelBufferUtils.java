@@ -152,7 +152,9 @@ public final class ChannelBufferUtils {
 
 		if (headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)) {
 			result.setLength(calculateMessageSize(headerAndBody[POSITION_HEADER].length(), headerParams));
-			result.addMessage(headerAndBody[POSITION_BODY]);
+			if(headerAndBody.length > 1){
+				result.addMessage(headerAndBody[POSITION_BODY]);
+			}
 		}
 
 		return result;
