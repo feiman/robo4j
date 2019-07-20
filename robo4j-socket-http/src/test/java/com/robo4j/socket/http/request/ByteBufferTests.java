@@ -29,8 +29,6 @@ import com.robo4j.socket.http.util.RoboHttpUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.robo4j.socket.http.HttpHeaderFieldValues.CONNECTION_KEEP_ALIVE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -84,10 +82,32 @@ class ByteBufferTests {
 
 		HttpDecoratedRequest decoratedRequest = ChannelBufferUtils.extractDecoratedRequestByStringMessage(postMessage);
 
-		assertNotNull(postMessage);
+		assertNotNull(decoratedRequest);
+		assertEquals(HttpMethod.POST, decoratedRequest.getPathMethod().getMethod());
 		assertEquals(postMessage.length(), decoratedRequest.getLength());
 		assertEquals(clientPath, decoratedRequest.getPathMethod().getPath());
 		assertEquals(bodyMessage, decoratedRequest.getMessage());
+	}
+
+	@Test
+	void byteBufferFromRequestWithNoBodyTest() {
+
+		String host = "localhost";
+		String clientPath = "/test";
+
+		HttpDenominator denominator = new HttpRequestDenominator(HttpMethod.GET, clientPath, HttpVersion.HTTP_1_1);
+		String getMessage = HttpMessageBuilder.Build().setDenominator(denominator)
+				.addHeaderElement(HttpHeaderFieldNames.HOST,
+						RoboHttpUtils.createHost(host, ProtocolType.HTTP.getPort()))
+				.build();
+
+		HttpDecoratedRequest decoratedRequest = ChannelBufferUtils.extractDecoratedRequestByStringMessage(getMessage);
+
+		assertNotNull(decoratedRequest);
+		assertEquals(HttpMethod.GET, decoratedRequest.getPathMethod().getMethod());
+		assertEquals(0, decoratedRequest.getLength());
+		assertEquals(clientPath, decoratedRequest.getPathMethod().getPath());
+		assertEquals(null, decoratedRequest.getMessage());
 	}
 
 	@Test
@@ -118,25 +138,5 @@ class ByteBufferTests {
 		byte[] resBytes = ChannelBufferUtils.validArray(tmpBytes, bPosition);
 		ByteBuffer resultBuffer = ByteBuffer.wrap(resBytes);
 		assertEquals(TEST_BYTE_BUFFER.capacity(), resultBuffer.capacity() + ChannelBufferUtils.END_WINDOW.length);
-	}
-
-	@Test
-	void test() {
-		Pattern pattern = Pattern.compile("^(.*)[\\r\\n{2}]|[\\n\\n](.*)$");
-
-		String one = "some\r\n\r\nother";
-		String two = "some\n\nother";
-
-		Matcher matcher1 = pattern.matcher(one);
-		Matcher matcher2 = pattern.matcher(two);
-
-		// Assert.assertTrue(matcher1.find());
-		// Assert.assertTrue(matcher2.find());
-		// Assert.assertTrue(matcher2.groupCount() == matcher1.groupCount());
-		// Assert.assertTrue(matcher2.groupCount() == matcher1.groupCount());
-		System.out.println("ONE: " + matcher1.find() + " group: " + matcher1.groupCount() + " 1: " + matcher1.group(1)
-				+ " 2: " + matcher1.group(0));
-		System.out.println("TWO: " + matcher2.find() + " group: " + matcher2.groupCount());
-
 	}
 }
