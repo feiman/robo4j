@@ -48,6 +48,10 @@ public class RoboHttpUnitGetTestApp {
 	private static final int SERVER_PORT = 8061;
 	private static final String UNIT_ID_HTTP_CLIENT = "http_client";
 
+	public static void main(String[] args) throws Exception {
+		new RoboHttpUnitGetTestApp().systemWithHttpServerOnlyTest();
+	}
+
 	/**
 	 * Run the system with only server unit
 	 * 

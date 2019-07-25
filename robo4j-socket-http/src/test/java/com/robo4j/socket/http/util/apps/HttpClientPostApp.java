@@ -15,7 +15,7 @@
  * along with Robo4J. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.robo4j.socket.http.units;
+package com.robo4j.socket.http.util.apps;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -23,12 +23,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 /**
- * HttpClientApp is a simple HTTP client app to ping Robo4j Http Context
+ * HttpClientPostApp simple post request runner
  *
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-public class HttpClientApp {
+public class HttpClientPostApp {
 
     public static void main(String[] args) throws Exception {
         HttpClient client = HttpClient.newHttpClient();

@@ -14,28 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with Robo4J. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.robo4j.socket.http.util;
+
+package com.robo4j.socket.http.channel;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-
 /**
+ * ReadSelectionKeyHandler tests
+ *
  * @author Marcus Hirt (@hirt)
- * @author Miro Wengner (@miragemiko)
+ * @author Miroslav Wengner (@miragemiko)
  */
-class InternalUtilTests {
+class ReadSelectionKeyHandlerTests {
 
     @Test
-    void testSeparator(){
-        String separator = SystemPropertyUtils.get("line.separator", "\n\n");
-        System.out.println("Separator: " + Collections.singletonList(separator.toCharArray()));
-
-        assertNotNull(separator.toCharArray());
+    void simpleTest(){
 
     }
-
 }

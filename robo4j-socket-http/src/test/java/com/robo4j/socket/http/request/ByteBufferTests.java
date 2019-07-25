@@ -33,6 +33,7 @@ import java.nio.ByteBuffer;
 import static com.robo4j.socket.http.HttpHeaderFieldValues.CONNECTION_KEEP_ALIVE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -107,7 +108,7 @@ class ByteBufferTests {
 		assertEquals(HttpMethod.GET, decoratedRequest.getPathMethod().getMethod());
 		assertEquals(0, decoratedRequest.getLength());
 		assertEquals(clientPath, decoratedRequest.getPathMethod().getPath());
-		assertEquals(null, decoratedRequest.getMessage());
+		assertNull(decoratedRequest.getMessage());
 	}
 
 	@Test

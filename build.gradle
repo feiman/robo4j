@@ -205,6 +205,7 @@ project("robo4j-socket-http") {
 
     dependencies {
         implementation(project(":robo4j-core"))
+        testImplementation("org.mockito:mockito-core:${testMockitoCoreVersion}")
     }
 }
 
