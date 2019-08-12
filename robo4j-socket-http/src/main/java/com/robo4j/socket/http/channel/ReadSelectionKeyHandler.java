@@ -34,6 +34,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_CODEC_REGISTRY;
+
 /**
  * Reading TPC/IP Socket protocol handler
  *
@@ -45,18 +47,15 @@ public class ReadSelectionKeyHandler implements SelectionKeyHandler {
 
 	private final RoboContext context;
 	private final ServerContext serverContext;
-	@Deprecated  // FIXME: 2/18/18 codecRegistry are in context
-	private final CodecRegistry codecRegistry;
 	private final Map<SelectionKey, HttpResponseProcess> outBuffers;
 	private final SelectionKey key;
 	private final Lock lock = new ReentrantLock();
 	private final ChannelRequestBuffer channelRequestBuffer = new ChannelRequestBuffer();
 
-	public ReadSelectionKeyHandler(RoboContext context, ServerContext serverContext, CodecRegistry codecRegistry,
-								   Map<SelectionKey, HttpResponseProcess> outBuffers, SelectionKey key) {
+	public ReadSelectionKeyHandler(RoboContext context, ServerContext serverContext,
+			Map<SelectionKey, HttpResponseProcess> outBuffers, SelectionKey key) {
 		this.context = context;
 		this.serverContext = serverContext;
-		this.codecRegistry = codecRegistry;
 		this.outBuffers = outBuffers;
 		this.key = key;
 	}
@@ -66,17 +65,21 @@ public class ReadSelectionKeyHandler implements SelectionKeyHandler {
 		SocketChannel channel = (SocketChannel) key.channel();
 		lock.lock();
 		try {
-			final HttpDecoratedRequest decoratedRequest = channelRequestBuffer.getHttpDecoratedRequestByChannel(channel);
+			final HttpDecoratedRequest decoratedRequest = channelRequestBuffer
+					.getHttpDecoratedRequestByChannel(channel);
+			final CodecRegistry codecRegistry = serverContext.getPropertySafe(CodecRegistry.class,
+					PROPERTY_CODEC_REGISTRY);
 			final RoboRequestFactory factory = new RoboRequestFactory(codecRegistry);
-			final RoboRequestCallable callable = new RoboRequestCallable(context, serverContext, decoratedRequest, factory);
+			final RoboRequestCallable callable = new RoboRequestCallable(context, serverContext, decoratedRequest,
+					factory);
 			final Future<HttpResponseProcess> futureResult = context.getScheduler().submit(callable);
 			final HttpResponseProcess result = extractRoboResponseProcess(futureResult);
 			outBuffers.put(key, result);
 			registerSelectionKey(channel);
 			return key;
-		} catch (IOException e){
+		} catch (IOException e) {
 			throw new SocketException(e.getMessage());
-		}finally {
+		} finally {
 			lock.unlock();
 		}
 	}

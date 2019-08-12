@@ -19,7 +19,6 @@ package com.robo4j.socket.http.channel;
 import com.robo4j.RoboContext;
 import com.robo4j.logging.SimpleLoggingUtil;
 import com.robo4j.socket.http.request.HttpResponseProcess;
-import com.robo4j.socket.http.units.CodecRegistry;
 import com.robo4j.socket.http.units.ServerContext;
 import com.robo4j.socket.http.util.ChannelUtils;
 
@@ -32,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.robo4j.socket.http.util.ChannelUtils.handleSelectorHandler;
-import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_CODEC_REGISTRY;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_BUFFER_CAPACITY;
 
 /**
@@ -78,7 +76,6 @@ public class InboundHttpSocketChannelHandler implements ChannelHandler {
 		socketChannel = ChannelUtils.initServerSocketChannel(serverContext);
 		final SelectionKey key = ChannelUtils.registerSelectionKey(socketChannel);
 
-		final CodecRegistry codecRegistry = serverContext.getPropertySafe(CodecRegistry.class, PROPERTY_CODEC_REGISTRY);
 		final int bufferCapacity = serverContext.getPropertySafe(Integer.class, PROPERTY_BUFFER_CAPACITY);
 
 		while (active) {
@@ -100,7 +97,7 @@ public class InboundHttpSocketChannelHandler implements ChannelHandler {
 				} else if (selectedKey.isConnectable()) {
 					handleSelectorHandler(new ConnectSelectionKeyHandler(selectedKey));
 				} else if (selectedKey.isReadable()) {
-					handleSelectorHandler(new ReadSelectionKeyHandler(context, serverContext, codecRegistry, outBuffers, selectedKey));
+					handleSelectorHandler(new ReadSelectionKeyHandler(context, serverContext, outBuffers, selectedKey));
 				} else if (selectedKey.isWritable()) {
 					handleSelectorHandler(new WriteSelectionKeyHandler(context, serverContext, outBuffers, selectedKey));
 				}

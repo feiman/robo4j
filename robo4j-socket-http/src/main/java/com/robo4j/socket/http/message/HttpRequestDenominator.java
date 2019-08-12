@@ -52,8 +52,6 @@ public class HttpRequestDenominator implements HttpDenominator {
 		this.attributes = Collections.emptyMap();
 	}
 
-
-
 	/**
 	 *
 	 * @param method
@@ -78,10 +76,12 @@ public class HttpRequestDenominator implements HttpDenominator {
 	 * @param version
 	 *            http version
 	 * @param attributes
-	 * 			  request attributes
+	 *            request attributes
 	 */
-	public HttpRequestDenominator(HttpMethod method, String path, HttpVersion version, Map<String, Set<String>> attributes) {
-		this.pathHttpMethod = new PathHttpMethod(path, method);;
+	public HttpRequestDenominator(HttpMethod method, String path, HttpVersion version,
+			Map<String, Set<String>> attributes) {
+		this.pathHttpMethod = new PathHttpMethod(path, method);
+		;
 		this.version = version;
 		this.attributes = attributes;
 	}
@@ -107,8 +107,13 @@ public class HttpRequestDenominator implements HttpDenominator {
 	@Override
 	public String generate() {
 		assert version != null;
-		return sb.append(pathHttpMethod.getMethod().getName()).append(Utf8Constant.UTF8_SPACE).append(pathHttpMethod.getPath()).append(Utf8Constant.UTF8_SPACE)
+		//@formatter:off
+		return sb.append(pathHttpMethod.getMethod().getName())
+				.append(Utf8Constant.UTF8_SPACE)
+				.append(pathHttpMethod.getPath())
+				.append(Utf8Constant.UTF8_SPACE)
 				.append(getVersion()).toString();
+		//@formatter:on
 	}
 
 	@Override
