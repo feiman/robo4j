@@ -62,7 +62,7 @@ public class ReadSelectionKeyHandler implements SelectionKeyHandler {
 
 	@Override
 	public SelectionKey handle() {
-		SocketChannel channel = (SocketChannel) key.channel();
+		final SocketChannel channel = (SocketChannel) key.channel();
 		lock.lock();
 		try {
 			final HttpDecoratedRequest decoratedRequest = channelRequestBuffer

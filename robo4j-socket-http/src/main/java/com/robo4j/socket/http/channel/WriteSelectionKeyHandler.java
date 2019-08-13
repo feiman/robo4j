@@ -65,7 +65,7 @@ public class WriteSelectionKeyHandler implements SelectionKeyHandler {
 
 		final HttpResponseProcess responseProcess = outBuffers.get(key);
 
-		ByteBuffer buffer;
+		final ByteBuffer buffer;
 		if (responseProcess.getMethod() != null) {
 			switch (responseProcess.getMethod()) {
 			case GET:
@@ -105,15 +105,10 @@ public class WriteSelectionKeyHandler implements SelectionKeyHandler {
 				break;
 			}
 		} else {
-			HttpDenominator denominator = new HttpResponseDenominator(StatusCode.BAD_REQUEST, HttpVersion.HTTP_1_1);
+			HttpDenominator denominator = new HttpResponseDenominator(responseProcess.getCode(), HttpVersion.HTTP_1_1);
 			String badResponse = HttpMessageBuilder.Build().setDenominator(denominator).build();
 			buffer = ChannelBufferUtils.getByteBufferByString(badResponse);
-			try {
-				ChannelUtils.writeBuffer(channel, buffer);
-			} catch (Exception e) {
-				throw new SocketException("post write", e);
-			}
-			buffer.clear();
+			ChannelUtils.handleWriteChannelAndBuffer("bad request", channel, buffer);
 		}
 
 		try {

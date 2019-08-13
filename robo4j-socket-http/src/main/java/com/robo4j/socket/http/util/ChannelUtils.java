@@ -168,7 +168,7 @@ public final class ChannelUtils {
 
 	public static int getReadyChannelBySelectionKey(SelectionKey key, long timeout) {
 		try {
-			return key.selector().select(timeout);
+			return key.selector().select(3L);
 		} catch (Exception e) {
 			SimpleLoggingUtil.error(ChannelUtils.class, "get ready channel by selection key", e);
 			throw new SocketException("get ready channel by selection key", e);

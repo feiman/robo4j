@@ -66,6 +66,12 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 	public HttpResponseProcess call() throws Exception {
 
 		final HttpResponseProcessBuilder resultBuilder = HttpResponseProcessBuilder.Builder();
+
+		if(decoratedRequest == null){
+			return resultBuilder.setCode(StatusCode.BAD_REQUEST).build();
+
+		}
+
 		final ServerPathConfig pathConfig = serverContext.getPathConfig(decoratedRequest.getPathMethod());
 
 		if (isValidPath(pathConfig)) {

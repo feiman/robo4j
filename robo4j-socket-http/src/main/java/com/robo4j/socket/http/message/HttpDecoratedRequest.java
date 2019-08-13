@@ -23,6 +23,10 @@ import com.robo4j.socket.http.util.RoboHttpUtils;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.robo4j.socket.http.HttpHeaders.HOST;
+import static com.robo4j.socket.http.util.HttpMessageUtils.COLON;
+import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_DEFAULT_PORT;
+
 /**
  * Inbound Http message used by Server units.
  * Message does contains all necessary information for processing the request
@@ -50,6 +54,12 @@ public final class HttpDecoratedRequest extends AbstractHttpDecoratedMessage {
 
 	public HttpDecoratedRequest(Map<String, String> header, HttpRequestDenominator denominator) {
 		super(header, denominator.getVersion());
+		if(header.containsKey(HOST)){
+			String[] arrayHost = header.get(HOST).split(COLON);
+			host = arrayHost[0];
+			port = arrayHost.length > 1 ? port = Integer.valueOf(arrayHost[1]) : HTTP_DEFAULT_PORT;
+
+		}
 		this.denominator = denominator;
 	}
 
@@ -87,5 +97,20 @@ public final class HttpDecoratedRequest extends AbstractHttpDecoratedMessage {
 	@Override
 	public String toString() {
 		return "HttpDecoratedRequest{" + " denominator=" + denominator + "\' " + super.toString() + '}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		HttpDecoratedRequest that = (HttpDecoratedRequest) o;
+		return Objects.equals(denominator, that.denominator) &&
+				Objects.equals(host, that.host) &&
+				Objects.equals(port, that.port);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(denominator, host, port);
 	}
 }

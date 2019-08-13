@@ -23,6 +23,7 @@ import com.robo4j.util.Utf8Constant;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.robo4j.util.Utf8Constant.UTF8_SOLIDUS;
@@ -119,5 +120,20 @@ public class HttpRequestDenominator implements HttpDenominator {
 	@Override
 	public String toString() {
 		return "HttpRequestDenominator{" + "pathHttpMethod=" + pathHttpMethod + '\'' + ", version=" + version + '}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		HttpRequestDenominator that = (HttpRequestDenominator) o;
+		return Objects.equals(pathHttpMethod, that.pathHttpMethod) &&
+				version == that.version &&
+				Objects.equals(attributes, that.attributes);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(pathHttpMethod, version, attributes);
 	}
 }

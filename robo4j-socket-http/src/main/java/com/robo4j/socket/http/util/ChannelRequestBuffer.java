@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 
-import static com.robo4j.socket.http.util.ChannelBufferUtils.HTTP_DECORATED_REQUEST_EMPTY;
-
 /**
  * ChannelRequestBuffer
  *
@@ -62,7 +60,9 @@ public class ChannelRequestBuffer {
 			return result;
 		} else {
 			SimpleLoggingUtil.error(getClass(), "http decorated request issue: empty is provided");
-			return HTTP_DECORATED_REQUEST_EMPTY;
+//			return HTTP_DECORATED_REQUEST_EMPTY;
+			requestBuffer.clear();
+			return null;
 		}
 	}
 }

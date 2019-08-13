@@ -29,6 +29,7 @@ public final class HttpMessageUtils {
 	public static final String SPACE = "\u0020";
 	public static final String HTTP_HEADER_BODY_DELIMITER = HTTP_NEW_LINE.concat(HTTP_NEW_LINE);
 	public static final String COLON = ":";
+	public static final int HTTP_DEFAULT_PORT = 80;
 
 	/**
 	 * The HTTP separator characters. Defined in RFC 2616, section 2.2

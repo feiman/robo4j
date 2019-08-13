@@ -1,4 +1,0 @@
-GET /something HTTP/1.1
-host: 127.0.0.1:9050
-
-null

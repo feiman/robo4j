@@ -29,11 +29,11 @@ import java.nio.channels.ByteChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.robo4j.socket.http.util.HttpConstant.HTTP_NEW_LINE;
 import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER;
-import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_SEP;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_BODY;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_HEADER;
 
@@ -46,6 +46,10 @@ import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_HEADER;
 public final class ChannelBufferUtils {
 
 	public static final Pattern RESPONSE_SPRING_PATTERN = Pattern.compile("^(\\d.\r\n)?(.*)(\r\n)?");
+	/**
+	 * only for simple params max with one -
+	 */
+	public static final Pattern HEADER_HOST_PARAMS = Pattern.compile("(^\\w+-?\\w+):(.*)");
 	public static final int CHANNEL_TIMEOUT = 60000;
 	public static final int INIT_BUFFER_CAPACITY = 4 * 4096;
 	public static final byte CHAR_NEW_LINE = 0x0A;
@@ -53,9 +57,6 @@ public final class ChannelBufferUtils {
 	public static final byte[] END_WINDOW = { CHAR_NEW_LINE, CHAR_NEW_LINE };
 	public static final int BUFFER_MARK_END = -1;
 	public static final int RESPONSE_JSON_GROUP = 2;
-
-	public static final HttpDecoratedRequest HTTP_DECORATED_REQUEST_EMPTY =  new HttpDecoratedRequest(new HashMap<>(),
-					new HttpRequestDenominator(HttpMethod.GET, HttpVersion.HTTP_1_1));
 
 	/**
 	 *
@@ -132,6 +133,7 @@ public final class ChannelBufferUtils {
 	 *            message
 	 * @return http decorate request
 	 */
+	// TODO: simplify
 	public static HttpDecoratedRequest extractDecoratedRequestByStringMessage(String message) {
 		final String[] headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER);
 		final String[] header = headerAndBody[POSITION_HEADER].split("[" + HTTP_NEW_LINE + "]+");
@@ -155,7 +157,7 @@ public final class ChannelBufferUtils {
 
 		if (headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)) {
 			result.setLength(calculateMessageSize(headerAndBody[POSITION_HEADER].length(), headerParams));
-			if(headerAndBody.length > 1){
+			if (headerAndBody.length > 1) {
 				result.addMessage(headerAndBody[POSITION_BODY]);
 			}
 		}
@@ -220,11 +222,11 @@ public final class ChannelBufferUtils {
 	static Map<String, String> getHeaderParametersByArray(String[] paramArray) {
 		final Map<String, String> result = new HashMap<>();
 		for (int i = 0; i < paramArray.length; i++) {
-			final String[] array = paramArray[i].split(HttpMessageUtils.getHttpSeparator(HTTP_HEADER_SEP));
 
-			String key = array[HttpMessageUtils.METHOD_KEY_POSITION].toLowerCase();
-			String value = array[HttpMessageUtils.URI_VALUE_POSITION].trim();
-			result.put(key, value);
+			Matcher matcher = HEADER_HOST_PARAMS.matcher(paramArray[i]);
+			while (matcher.find()) {
+				result.put(matcher.group(1).trim(), matcher.group(2).trim());
+			}
 		}
 		return result;
 	}

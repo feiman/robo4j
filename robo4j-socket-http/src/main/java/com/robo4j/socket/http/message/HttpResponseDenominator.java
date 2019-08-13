@@ -18,7 +18,8 @@ package com.robo4j.socket.http.message;
 
 import com.robo4j.socket.http.HttpVersion;
 import com.robo4j.socket.http.enums.StatusCode;
-import com.robo4j.socket.http.message.HttpDenominator;
+
+import java.util.Objects;
 
 import static com.robo4j.socket.http.util.HttpMessageUtils.SPACE;
 
@@ -71,5 +72,19 @@ public class HttpResponseDenominator implements HttpDenominator {
 				"status=" + status +
 				", version=" + version +
 				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		HttpResponseDenominator that = (HttpResponseDenominator) o;
+		return status == that.status &&
+				version == that.version;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(status, version);
 	}
 }
