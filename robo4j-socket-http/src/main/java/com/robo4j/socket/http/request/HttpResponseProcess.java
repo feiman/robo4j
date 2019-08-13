@@ -19,6 +19,8 @@ package com.robo4j.socket.http.request;
 import com.robo4j.socket.http.HttpMethod;
 import com.robo4j.socket.http.enums.StatusCode;
 
+import java.util.Objects;
+
 /**
  *  wrapper for http request result
  *  @see RoboRequestCallable
@@ -46,22 +48,10 @@ public final class HttpResponseProcess implements ChannelResponseProcess<String>
         return path;
     }
 
-//    public void setPath(String path) {
-//        this.path = path;
-//    }
-
     @Override
     public String getTarget() {
         return target;
     }
-
-//    public void setTarget(String target) {
-//        this.target = target;
-//    }
-
-//    public void setMethod(HttpMethod method) {
-//        this.method = method;
-//    }
 
     public HttpMethod getMethod() {
         return method;
@@ -76,10 +66,6 @@ public final class HttpResponseProcess implements ChannelResponseProcess<String>
         this.result = result;
     }
 
-//    public void setCode(StatusCode code){
-//        this.code = code;
-//    }
-
     public StatusCode getCode() {
         return code;
     }
@@ -92,5 +78,22 @@ public final class HttpResponseProcess implements ChannelResponseProcess<String>
                 ", code=" + code +
                 ", result=" + result +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HttpResponseProcess process = (HttpResponseProcess) o;
+        return Objects.equals(path, process.path) &&
+                Objects.equals(target, process.target) &&
+                method == process.method &&
+                code == process.code &&
+                Objects.equals(result, process.result);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, target, method, code, result);
     }
 }

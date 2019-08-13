@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static com.robo4j.socket.http.codec.AbstractHttpMessageCodec.DEFAULT_PACKAGE;
 import static com.robo4j.socket.http.util.ChannelBufferUtils.INIT_BUFFER_CAPACITY;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_BUFFER_CAPACITY;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_CODEC_PACKAGES;
@@ -86,7 +87,7 @@ public class HttpServerUnit extends RoboUnit<Object> {
 		serverContext.putProperty(PROPERTY_BUFFER_CAPACITY, bufferCapacity);
 		serverContext.putProperty(PROPERTY_SOCKET_PORT, serverPort);
 
-		String packages = configuration.getString(PROPERTY_CODEC_PACKAGES, null);
+		String packages = configuration.getString(PROPERTY_CODEC_PACKAGES, DEFAULT_PACKAGE);
 
 		serverContext.putProperty(PROPERTY_CODEC_REGISTRY, CodeRegistryUtils.getCodecRegistry(packages));
 

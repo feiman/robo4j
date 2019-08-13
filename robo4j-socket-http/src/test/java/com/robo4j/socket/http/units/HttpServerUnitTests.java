@@ -46,7 +46,41 @@ class HttpServerUnitTests {
 		Throwable exception = assertThrows(RoboBuilderException.class, () -> {
 			RoboBuilder builder = new RoboBuilder();
 
-			Configuration config = new ConfigurationBuilder().addInteger(PROPERTY_SOCKET_PORT, PORT).build();
+			//@formatter:off
+			Configuration config = new ConfigurationBuilder()
+					.addInteger(PROPERTY_SOCKET_PORT, PORT)
+					.addString(PROPERTY_CODEC_PACKAGES, "")
+					.build();
+			//@formatter:on
+			builder.add(HttpServerUnit.class, config, ID_HTTP_SERVER);
+			RoboContext system = builder.build();
+
+			system.start();
+			System.out.println("system: State after start:");
+			System.out.println(SystemUtil.printStateReport(system));
+			RoboReference<HttpServerUnit> systemReference = system.getReference(ID_HTTP_SERVER);
+			system.shutdown();
+			System.out.println("system: State after shutdown:");
+			System.out.println(SystemUtil.printStateReport(system));
+			assertEquals(LifecycleState.SHUTDOWN, systemReference.getState());
+		});
+
+		assertEquals("Error initializing RoboUnit", exception.getMessage());
+
+	}
+
+	@Test
+	void httpServerUnitWrongCodecsPackageTest() throws Exception {
+
+		Throwable exception = assertThrows(RoboBuilderException.class, () -> {
+			RoboBuilder builder = new RoboBuilder();
+
+			//@formatter:off
+			Configuration config = new ConfigurationBuilder()
+					.addInteger(PROPERTY_SOCKET_PORT, PORT)
+					.addString(PROPERTY_CODEC_PACKAGES, "something  ,bad")
+					.build();
+			//@formatter:on
 			builder.add(HttpServerUnit.class, config, ID_HTTP_SERVER);
 			RoboContext system = builder.build();
 

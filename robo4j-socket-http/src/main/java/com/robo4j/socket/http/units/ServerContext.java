@@ -30,7 +30,7 @@ import java.util.Objects;
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-public final class ServerContext implements SocketContext<ServerPathConfig> {
+public class ServerContext implements SocketContext<ServerPathConfig> {
 
 	/**
 	 * map of registered paths and related configuration

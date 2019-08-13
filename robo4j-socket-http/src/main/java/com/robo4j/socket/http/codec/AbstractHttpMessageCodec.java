@@ -29,6 +29,9 @@ import com.robo4j.socket.http.util.ReflectUtils;
  * @author Miroslav Wengner (@miragemiko)
  */
 public abstract class AbstractHttpMessageCodec<T> implements SocketDecoder<String, T>, SocketEncoder<T, String> {
+
+	public static final String DEFAULT_PACKAGE = AbstractHttpMessageCodec.class.getPackageName();
+
 	private final Class<T> clazz;
 
 	protected AbstractHttpMessageCodec(Class<T> clazz) {

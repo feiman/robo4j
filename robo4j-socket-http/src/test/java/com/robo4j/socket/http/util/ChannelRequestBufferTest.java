@@ -24,18 +24,17 @@ import com.robo4j.socket.http.message.HttpRequestDenominator;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
+import static com.robo4j.socket.http.util.TestUtils.getResourcePath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,7 +54,7 @@ class ChannelRequestBufferTest {
 		ChannelRequestBuffer channelRequestBuffer = new ChannelRequestBuffer();
 		HttpDecoratedRequest request = channelRequestBuffer.getHttpDecoratedRequestByChannel(channel);
 
-		assertEquals(null, request);
+		assertNull( request);
 	}
 
 	@Test
@@ -75,7 +74,7 @@ class ChannelRequestBufferTest {
 			assertFalse(expectedHttpDecoratedRequest.getHeader().isEmpty());
 			assertEquals(expectedHttpDecoratedRequest.getHeader(), request.getHeader());
 			assertEquals(request.getHost(), "localhost");
-			assertTrue(request.getPort().equals(9050));
+			assertEquals(request.getPort().intValue(), 9050);
 			assertEquals(expectedHttpDecoratedRequest, request);
 		}
 
@@ -93,7 +92,6 @@ class ChannelRequestBufferTest {
 		//@formatter:on
 		final HttpDecoratedRequest expectedHttpDecoratedRequest = new HttpDecoratedRequest(header, denominator);
 
-
 		Path path = getResourcePath("httpGetRequestNotSupportedPath.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
@@ -106,7 +104,7 @@ class ChannelRequestBufferTest {
 			assertEquals(expectedHttpDecoratedRequest.getHost(), request.getHost());
 			assertEquals(expectedHttpDecoratedRequest.getPort(), request.getPort());
 			assertEquals(request.getHost(), "localhost");
-			assertTrue(request.getPort().equals(8061));
+			assertEquals(request.getPort().intValue(), 8061);
 			assertEquals(expectedHttpDecoratedRequest, request);
 		}
 
@@ -140,17 +138,11 @@ class ChannelRequestBufferTest {
 			assertFalse(expectedHttpDecoratedRequest.getHeader().isEmpty());
 			assertEquals(expectedHttpDecoratedRequest.getHeader(), request.getHeader());
 			assertEquals(request.getHost(), "localhost");
-			assertTrue(request.getPort().equals(8061));
+			assertEquals(request.getPort().intValue(), 8061);
 			assertEquals(expectedHttpDecoratedRequest, request);
 		}
 
 	}
 
-	private Path getResourcePath(final String name) throws URISyntaxException {
-		URL url = Thread.currentThread().getContextClassLoader().getResource(name);
-		if (url == null) {
-			throw new IllegalStateException(String.format("not available: %s", name));
-		}
-		return Path.of(url.toURI());
-	}
+
 }

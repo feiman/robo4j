@@ -20,6 +20,8 @@ import com.robo4j.util.StringConstants;
 import com.robo4j.util.Utf8Constant;
 
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Basic Http constants and utils methods
@@ -83,18 +85,13 @@ public final class RoboHttpUtils {
 				System.currentTimeMillis() - start));
 	}
 
-	// TODO: 1/26/18 (miro
+	private static final Pattern PACKAGES_PATTERN = Pattern.compile("(\\w+\\.?)++");
 	public static boolean validatePackages(String packages) {
-		if (packages == null) {
+		if (packages == null || packages.contains(" ")) {
 			return false;
 		}
-		for (int i = 0; i < packages.length(); i++) {
-			char c = packages.charAt(i);
-			if (Character.isWhitespace(c)) {
-				return false;
-			}
-		}
-		return true;
+		Matcher matcher = PACKAGES_PATTERN.matcher(packages);
+		return matcher.find();
 	}
 
 }
