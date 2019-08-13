@@ -83,8 +83,12 @@ class HttpContextTests {
 				.getResourceAsStream("robo_client_context.xml");
 		builderProducer.add(contextIS);
 
-		List<HttpPathMethodDTO> paths = Collections.singletonList(new HttpPathMethodDTO(StringConstants.EMPTY,
-				HttpMethod.GET, Collections.singletonList(StringConsumer.NAME)));
+		List<HttpPathMethodDTO> paths = Collections.singletonList(
+				new HttpPathMethodDTO.Builder()
+						.setRoboUnit(StringConstants.EMPTY)
+						.setMethod(HttpMethod.GET)
+						.addCallbacks(Collections.singletonList(StringConsumer.NAME))
+						.build());
 
 		ClientContext context = new ClientContext();
 		HttpPathUtils.updateHttpClientContextPaths(context, paths);

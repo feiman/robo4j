@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
 /**
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
@@ -87,53 +86,52 @@ class ReflectUtilTests {
 	}
 
 	@Test
-	void serverAttributesResponse(){
+	void serverAttributesResponse() {
 		ResponseAttributeListDTO tmpAttr = new ResponseAttributeListDTO();
 
 		tmpAttr.setType("Type");
 		tmpAttr.setId("ID");
-		//String roboUnit, HttpMethod method, List<String> callbacks
-		tmpAttr.addValue(new HttpPathMethodDTO("testUnit", HttpMethod.GET, Collections.singletonList("test")));
+		tmpAttr.addValue(new HttpPathMethodDTO.Builder().setRoboUnit("testUnit").setMethod(HttpMethod.GET)
+				.addCallbacks(Collections.singletonList("test")).build());
 		String result = ReflectUtils.createJson(tmpAttr);
 		System.out.println("result:" + result);
 
 	}
 
 	@Test
-    void complexObjectToJsonTest(){
-        String expectedJson = "{\"name\":\"object\",\"value\":42,\"textList\":[\"one\",\"two\"],\"dictionary\":{\"one\":\"one1\",\"two\":\"two2\"},\"attributes\":{\"one\":{\"name\":\"name\",\"value\":\"test name\"},\"two\":{\"name\":\"value\",\"value\":\"42\"}}}";
-        TestListMapValues obj = new TestListMapValues();
-        obj.setName("object");
-        obj.setValue(42);
-        obj.setTextList(Arrays.asList("one", "two"));
-        Map<String, String> textMap = new HashMap<>();
-        textMap.put("one", "one1");
-        textMap.put("two", "two2");
-        obj.setDictionary(textMap);
+	void complexObjectToJsonTest() {
+		String expectedJson = "{\"name\":\"object\",\"value\":42,\"textList\":[\"one\",\"two\"],\"dictionary\":{\"one\":\"one1\",\"two\":\"two2\"},\"attributes\":{\"one\":{\"name\":\"name\",\"value\":\"test name\"},\"two\":{\"name\":\"value\",\"value\":\"42\"}}}";
+		TestListMapValues obj = new TestListMapValues();
+		obj.setName("object");
+		obj.setValue(42);
+		obj.setTextList(Arrays.asList("one", "two"));
+		Map<String, String> textMap = new HashMap<>();
+		textMap.put("one", "one1");
+		textMap.put("two", "two2");
+		obj.setDictionary(textMap);
 
+		Map<String, PathAttributeDTO> attributes = new HashMap<>();
+		attributes.put("one", new PathAttributeDTO("name", "test name"));
+		attributes.put("two", new PathAttributeDTO("value", "42"));
+		obj.setAttributes(attributes);
 
-        Map<String, PathAttributeDTO> attributes = new HashMap<>();
-        attributes.put("one", new PathAttributeDTO("name", "test name"));
-        attributes.put("two", new PathAttributeDTO("value", "42"));
-        obj.setAttributes(attributes);
+		String result = ReflectUtils.createJson(obj);
+		System.out.println("result:" + result);
+		assertEquals(expectedJson, result);
+	}
 
-        String result = ReflectUtils.createJson(obj);
-        System.out.println("result:"+result);
-        assertEquals(expectedJson, result);
-    }
-
-    @Test
-    void createJsonByStringListCollectionTest() {
+	@Test
+	void createJsonByStringListCollectionTest() {
 		String expectedJson = "[\"One\",\"Two\"]";
-        List<String> list = new ArrayList<>();
-        list.add("One");
-        list.add("Two");
+		List<String> list = new ArrayList<>();
+		list.add("One");
+		list.add("Two");
 
-        String result = ReflectUtils.createJson(list);
-        System.out.println("result: " + result);
-        assertEquals(expectedJson, result);
+		String result = ReflectUtils.createJson(list);
+		System.out.println("result: " + result);
+		assertEquals(expectedJson, result);
 
-    }
+	}
 
 	@Test
 	void createJsonByNumberListCollectionTest() {
@@ -149,7 +147,7 @@ class ReflectUtilTests {
 	}
 
 	@Test
-	void createJsonByObjectListCollectionTest(){
+	void createJsonByObjectListCollectionTest() {
 
 		Throwable exception = assertThrows(RoboReflectException.class, () -> {
 			List<PathAttributeDTO> list = new ArrayList<>();
@@ -186,9 +184,8 @@ class ReflectUtilTests {
 		assertEquals(expectedString, result);
 	}
 
-
 	@Test
-	void createJsonByObjectMapCollection(){
+	void createJsonByObjectMapCollection() {
 
 		Throwable exception = assertThrows(RoboReflectException.class, () -> {
 			Map<String, PathAttributeDTO> map = new HashMap<>();

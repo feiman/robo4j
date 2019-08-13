@@ -44,9 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class HttpPathUtilTests {
 
-	//String roboUnit;
-	//	private HttpMethod method;
-	//	private List<String> callbacks;
+	// String roboUnit;
+	// private HttpMethod method;
+	// private List<String> callbacks;
 
 	@SuppressWarnings("unchecked")
 	@Test
@@ -57,7 +57,7 @@ public class HttpPathUtilTests {
 				"{\"roboUnit\":\"imageController\",\"method\":\"GET\",\"callbacks\":[\"callbackGETController\"]}," +
 				"{\"roboUnit\":\"cameraController\",\"method\":\"POST\",\"callbacks\":[\"callbackPOSTController\"]}," +
 				"{\"roboUnit\":\"cameraController\",\"method\":\"GET\",\"callbacks\":[\"callbackGETController\"]}," +
-				"{\"roboUnit\":\"emptyController\",\"method\":\"GET\"}]";
+				"{\"roboUnit\":\"emptyController\",\"method\":\"GET\",\"callbacks\":[]}]";
 		List<HttpPathMethodDTO> pathMethodList = PropertyListBuilder.Builder()
 				.add(createPathMethodDTO("imageController", "POST","callbackPOSTController"))
 				.add(createPathMethodDTO("imageController", "GET","callbackGETController"))
@@ -84,7 +84,10 @@ public class HttpPathUtilTests {
 				"{\"roboUnit\":\"cameraController\",\"method\":\"GET\",\"callbacks\":[\"callbackGETController\"]}," +
 				"{\"roboUnit\":\"emptyController\",\"method\":\"GET\"}]";
 
-		HttpPathMethodDTO duplicate = new HttpPathMethodDTO("cameraController", HttpMethod.POST, Collections.singletonList("callbackPOSTController"));
+		HttpPathMethodDTO duplicate = new HttpPathMethodDTO.Builder()
+				.setRoboUnit("cameraController")
+				.setMethod(HttpMethod.POST)
+				.addCallbacks( Collections.singletonList("callbackPOSTController")).build();
 		List<HttpPathMethodDTO> result = JsonUtil.toListFromJsonArray(HttpPathMethodDTO.class, jsonArray);
 
 		System.out.println("result: " + result);
@@ -161,8 +164,8 @@ public class HttpPathUtilTests {
 	}
 
 	private HttpPathMethodDTO createPathMethodDTO(String... args) {
-		List<String> properties = args.length > 2 ? Collections.singletonList(args[2]) : null;
-		return new HttpPathMethodDTO(args[0], HttpMethod.getByName(args[1]), properties);
+		final List<String> properties = args.length > 2 ? Collections.singletonList(args[2]) : null;
+		return new HttpPathMethodDTO.Builder().setRoboUnit(args[0]).setMethod(HttpMethod.getByName(args[1])).addCallbacks(properties).build();
 	}
 
 }

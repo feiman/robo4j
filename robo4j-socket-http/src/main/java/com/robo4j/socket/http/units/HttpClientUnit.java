@@ -81,7 +81,7 @@ public class HttpClientUnit extends RoboUnit<HttpDecoratedRequest> {
 	public void onMessage(HttpDecoratedRequest message) {
 		final HttpDecoratedRequest request = adjustRequest(message);
 		if (message.getDenominator() == null) {
-			SimpleLoggingUtil.info(getClass(), String.format("recofigured host: %s, port: %d", message.getHost(), message.getPort()));
+			SimpleLoggingUtil.info(getClass(), String.format("reconfigured host: %s, port: %d", message.getHost(), message.getPort()));
 			return;
 		}
 		final InetSocketAddress address = new InetSocketAddress(request.getHost(), request.getPort());

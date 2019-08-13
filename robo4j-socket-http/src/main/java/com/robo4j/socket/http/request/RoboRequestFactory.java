@@ -16,6 +16,7 @@
  */
 package com.robo4j.socket.http.request;
 
+import com.robo4j.AttributeDescriptor;
 import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
 import com.robo4j.logging.SimpleLoggingUtil;
@@ -30,9 +31,9 @@ import com.robo4j.socket.http.units.SocketDecoder;
 import com.robo4j.socket.http.util.JsonUtil;
 import com.robo4j.socket.http.util.ReflectUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -72,6 +73,21 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		return null;
 	}
 
+	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> unitRef, final AttributeDescriptor<?> ad){
+		final Object val;
+		try {
+			val = unitRef.getAttribute(ad).get();
+		} catch (InterruptedException | ExecutionException e) {
+			SimpleLoggingUtil.error(getClass(), e.getMessage());
+			return null;
+		}
+		final ResponseAttributeDTO attributeDTO = new ResponseAttributeDTO();
+		attributeDTO.setId(ad.getAttributeName());
+		attributeDTO.setType(ad.getAttributeType().getTypeName());
+		attributeDTO.setValue(String.valueOf(val));
+		return attributeDTO;
+	}
+
 	// FIXME correct available methods according to the configuration
 	@Override
 	public Object processGet(ServerPathConfig pathConfig) {
@@ -79,28 +95,20 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		final SocketDecoder<?, ?> decoder = codecRegistry.getDecoder(unitRef.getMessageType());
 
 		if(unitRef.getMessageType().equals(Object.class) || decoder == null){
-			 List<ResponseAttributeDTO> attrList = unitRef.getKnownAttributes().stream()
-					 .map(d -> {
-						 try {
-							 Object val = unitRef.getAttribute(d).get();
-							 ResponseAttributeDTO attributeDTO = new ResponseAttributeDTO();
-							 attributeDTO.setId(d.getAttributeName());
-							 attributeDTO.setType(d.getAttributeType().getTypeName());
-							 attributeDTO.setValue(String.valueOf(val));
 
-							 if(d.getAttributeName().equals(HttpServerUnit.ATTR_PATHS)){
-								 attributeDTO.setType("java.util.ArrayList");
-							 }
-							 return attributeDTO;
+			final  List<ResponseAttributeDTO> attrList = new ArrayList<>();
+			for(AttributeDescriptor<?> ad: unitRef.getKnownAttributes()){
 
+				ResponseAttributeDTO attributeDTO = createResponseAttributeDTO(unitRef, ad);
+				if(attributeDTO != null){
+					if(ad.getAttributeName().equals(HttpServerUnit.ATTR_PATHS)){
+						attributeDTO.setType("java.util.ArrayList");
+					}
+					attrList.add(attributeDTO);
+				}
 
-						 } catch (InterruptedException | ExecutionException e) {
-							 SimpleLoggingUtil.error(getClass(), e.getMessage());
-							 return null;
-						 }
-					 })
-					 .filter(Objects::nonNull)
-					 .collect(Collectors.toList());
+			}
+
 			 return JsonUtil.toJsonArrayServer(attrList);
 
 		} else {

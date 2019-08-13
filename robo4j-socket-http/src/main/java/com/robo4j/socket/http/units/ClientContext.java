@@ -37,7 +37,7 @@ public final class ClientContext implements SocketContext<ClientPathConfig> {
 	private final Map<PathHttpMethod, ClientPathConfig> pathConfigs = new HashMap<>();
 
 	/**
-	 * context properties
+	 * context properties : key: string identifier,  value: request property
 	 */
 	private final Map<String, Object> properties = new HashMap<>();
 
@@ -76,20 +76,32 @@ public final class ClientContext implements SocketContext<ClientPathConfig> {
 		properties.put(key, val);
 	}
 
-	@Override
-	public <E> E getProperty(Class<E> clazz, String key) {
-		return properties.containsKey(key) ? clazz.cast(properties.get(key)) : null;
-	}
-
 	/**
-	 *
+	 * 
+	 * 
 	 * @param clazz
 	 *            desired known class E
 	 * @param key
 	 *            property key
 	 * @param <E>
-	 *            property element instance
-	 * @return property element
+	 *            property element class
+	 * @return property instance or null
+	 */
+	@Override
+	public <E> E getProperty(Class<E> clazz, String key) {
+		return properties.containsKey(key) ? getPropertySafe(clazz, key) : null;
+	}
+
+	/**
+	 * when property is present
+	 * 
+	 * @param clazz
+	 *            desired known class E
+	 * @param key
+	 *            property key
+	 * @param <E>
+	 *            property element class
+	 * @return property instance
 	 */
 	@Override
 	public <E> E getPropertySafe(Class<E> clazz, String key) {

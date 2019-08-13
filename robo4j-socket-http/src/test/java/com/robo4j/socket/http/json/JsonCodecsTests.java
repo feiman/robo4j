@@ -76,10 +76,10 @@ class JsonCodecsTests {
 	@Test
 	void encodeServerPathDTOMessageNoFilterTest() {
 		// String expectedJson = "{\"roboUnit\":\"roboUnit1\",\"method\":\"GET\"}";
-		HttpPathMethodDTO message = new HttpPathMethodDTO();
-		message.setRoboUnit("roboUnit1");
-		message.setMethod(HttpMethod.GET);
-		message.setCallbacks(Collections.EMPTY_LIST);
+		HttpPathMethodDTO message = new HttpPathMethodDTO.Builder()
+				.setRoboUnit("roboUnit1")
+				.setMethod(HttpMethod.GET)
+				.build();
 
 		String resultJson = httpPathDTOCodec.encode(message);
 		HttpPathMethodDTO decodedMessage = httpPathDTOCodec.decode(resultJson);

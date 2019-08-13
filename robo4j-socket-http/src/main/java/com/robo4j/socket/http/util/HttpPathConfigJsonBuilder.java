@@ -46,13 +46,19 @@ public final class HttpPathConfigJsonBuilder {
 	}
 
 	public HttpPathConfigJsonBuilder addPath(String roboUnit, HttpMethod method) {
-		HttpPathMethodDTO document = new HttpPathMethodDTO(roboUnit, method);
+		final HttpPathMethodDTO document = new HttpPathMethodDTO.Builder()
+				.setMethod(method)
+				.setRoboUnit(roboUnit)
+				.build();
 		paths.add(document);
 		return this;
 	}
 
 	public HttpPathConfigJsonBuilder addPath(String roboUnit, HttpMethod method, List<String> filters) {
-		HttpPathMethodDTO document = new HttpPathMethodDTO(roboUnit, method, filters);
+		final HttpPathMethodDTO document = new HttpPathMethodDTO.Builder()
+				.setRoboUnit(roboUnit)
+				.setMethod(method)
+				.addCallbacks(filters).build();
 		paths.add(document);
 		return this;
 	}

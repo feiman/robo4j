@@ -110,8 +110,9 @@ class HttpServerConfigTests {
 		String configurationJson = "[{\"roboUnit\":\"roboUnit1\",\"method\":\"GET\"},"
 				+ "{\"roboUnit\":\"roboUnit2\",\"method\":\"POST\"}]";
 
-		List<HttpPathMethodDTO> expectedPathList = Arrays.asList(new HttpPathMethodDTO("roboUnit1", HttpMethod.GET),
-				new HttpPathMethodDTO("roboUnit2", HttpMethod.POST));
+		List<HttpPathMethodDTO> expectedPathList = Arrays.asList(
+				new HttpPathMethodDTO.Builder().setRoboUnit("roboUnit1").setMethod(HttpMethod.GET).build(),
+				new HttpPathMethodDTO.Builder().setRoboUnit("roboUnit2").setMethod(HttpMethod.POST).build());
 
 		List<HttpPathMethodDTO> paths = JsonUtil.readPathConfig(HttpPathMethodDTO.class, configurationJson);
 
@@ -125,9 +126,11 @@ class HttpServerConfigTests {
 				+ "{\"roboUnit\":\"roboUnit2\",\"method\":\"POST\"}, {\"roboUnit\":\"roboUnit3\",\"method\":\"GET\",\"callbacks\":[]}]";
 
 		List<HttpPathMethodDTO> expectedPathList = Arrays.asList(
-				new HttpPathMethodDTO("roboUnit1", HttpMethod.GET, Arrays.asList("filter1", "filter2")),
-				new HttpPathMethodDTO("roboUnit2", HttpMethod.POST),
-				new HttpPathMethodDTO("roboUnit3", HttpMethod.GET, Collections.emptyList()));
+				new HttpPathMethodDTO.Builder().setRoboUnit("roboUnit1").setMethod(HttpMethod.GET)
+						.addCallback("filter1").addCallback("filter2").build(),
+				new HttpPathMethodDTO.Builder().setRoboUnit("roboUnit2").setMethod(HttpMethod.POST).build(),
+				new HttpPathMethodDTO.Builder().setRoboUnit("roboUnit3").setMethod(HttpMethod.GET)
+						.addCallbacks(Collections.emptyList()).build());
 
 		List<HttpPathMethodDTO> paths = JsonUtil.readPathConfig(HttpPathMethodDTO.class, configurationJson);
 		System.out.println("paths: " + paths);

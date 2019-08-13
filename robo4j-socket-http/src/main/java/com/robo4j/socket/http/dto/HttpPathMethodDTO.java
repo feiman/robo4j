@@ -19,6 +19,7 @@ package com.robo4j.socket.http.dto;
 import com.robo4j.socket.http.HttpMethod;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,23 +29,56 @@ import java.util.Objects;
  */
 public class HttpPathMethodDTO {
 
+	public static class Builder {
+		private String roboUnit;
+		private HttpMethod method;
+		private List<String> callbacks = new ArrayList<>();
+
+		public Builder setRoboUnit(String roboUnit) {
+			this.roboUnit = roboUnit;
+			return this;
+		}
+
+		public Builder setMethod(HttpMethod method) {
+			this.method = method;
+			return this;
+		}
+
+		public Builder addCallback(final String callback) {
+			if(callback != null){
+				this.callbacks.add(callback);
+			}
+			return this;
+		}
+
+		public Builder addCallbacks(final Collection<String> callbacks) {
+			if(callbacks != null && !callbacks.isEmpty()){
+				this.callbacks.addAll(callbacks);
+			}
+			return this;
+		}
+
+		public HttpPathMethodDTO build() {
+			return new HttpPathMethodDTO(roboUnit, method, callbacks);
+		}
+
+	}
+
 	private String roboUnit;
 	private HttpMethod method;
 	private List<String> callbacks = new ArrayList<>();
 
-	public HttpPathMethodDTO(){
+	/**
+	 * due to the reflection
+	 */
+	public HttpPathMethodDTO() {
 
 	}
 
-	public HttpPathMethodDTO(String roboUnit, HttpMethod method) {
+	private HttpPathMethodDTO(String roboUnit, HttpMethod method, List<String> callbacks) {
 		this.roboUnit = roboUnit;
 		this.method = method;
-	}
-
-	public HttpPathMethodDTO(String roboUnit, HttpMethod method, List<String> callbacks) {
-		this.roboUnit = roboUnit;
-		this.method = method;
-		this.callbacks = callbacks;
+		this.callbacks.addAll(callbacks);
 	}
 
 	public String getRoboUnit() {
@@ -71,18 +105,16 @@ public class HttpPathMethodDTO {
 		this.callbacks = callbacks;
 	}
 
-	public void addCallbacks(String callback) {
-		this.callbacks.add(callback);
-	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 		HttpPathMethodDTO that = (HttpPathMethodDTO) o;
-		return Objects.equals(roboUnit, that.roboUnit) &&
-				method == that.method &&
-				Objects.equals(callbacks, that.callbacks);
+		return Objects.equals(roboUnit, that.roboUnit) && method == that.method
+				&& Objects.equals(callbacks, that.callbacks);
 	}
 
 	@Override
@@ -93,10 +125,7 @@ public class HttpPathMethodDTO {
 
 	@Override
 	public String toString() {
-		return "HttpPathMethodDTO{" +
-				"roboUnit='" + roboUnit + '\'' +
-				", method=" + method +
-				", callbacks=" + callbacks +
-				'}';
+		return "HttpPathMethodDTO{" + "roboUnit='" + roboUnit + '\'' + ", method=" + method + ", callbacks=" + callbacks
+				+ '}';
 	}
 }

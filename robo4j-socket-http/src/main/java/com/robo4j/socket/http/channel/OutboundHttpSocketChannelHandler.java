@@ -52,9 +52,11 @@ public class OutboundHttpSocketChannelHandler implements ChannelHandler, AutoClo
 
 	@Override
 	public void start() {
-		// FIXME: 1/24/18 (miro) -> client context
-		final HttpPathMethodDTO pathMethod = new HttpPathMethodDTO(message.getPathMethod().getPath(), message.getPathMethod().getMethod(),
-				message.getCallbacks());
+		final HttpPathMethodDTO pathMethod = new HttpPathMethodDTO.Builder()
+				.setRoboUnit(message.getPathMethod().getPath())
+				.setMethod( message.getPathMethod().getMethod())
+				.addCallbacks(message.getCallbacks())
+				.build();
 
 		//@formatter:off
 		final String resultMessage = HttpMessageBuilder.Build()
