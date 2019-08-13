@@ -63,7 +63,6 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public HttpResponseProcess call() throws Exception {
 
 		final HttpResponseProcessBuilder resultBuilder = HttpResponseProcessBuilder.Builder();
@@ -93,18 +92,19 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 						RoboReference<?> unit = context.getReference(pathConfig.getRoboUnit().getId());
 
 						PathAttributeListDTO pathAttributes = new PathAttributeListDTO();
-						unit.getKnownAttributes().forEach(a -> {
+						for(AttributeDescriptor<?> ad: unit.getKnownAttributes()){
 							PathAttributeDTO attributeDescriptor = new PathAttributeDTO();
-							attributeDescriptor.setName(a.getAttributeName());
-							attributeDescriptor.setValue(a.getAttributeType().getCanonicalName());
+							attributeDescriptor.setName(ad.getAttributeName());
+							attributeDescriptor.setValue(ad.getAttributeType().getCanonicalName());
 							pathAttributes.addAttribute(attributeDescriptor);
-						});
+						}
+
 						unitDescription = ReflectUtils.createJson(pathAttributes);
 					} else {
 						RoboReference<?> unit = context.getReference(pathConfig.getRoboUnit().getId());
 
 						List<PathAttributeDTO> attributes = new ArrayList<>();
-						for (AttributeDescriptor attr : unit.getKnownAttributes()) {
+						for (AttributeDescriptor<?> attr : unit.getKnownAttributes()) {
 							if (requestAttributes.contains(attr.getAttributeName())) {
 								PathAttributeDTO attribute = new PathAttributeDTO();
 								String valueString = String.valueOf(unit.getAttribute(attr).get());

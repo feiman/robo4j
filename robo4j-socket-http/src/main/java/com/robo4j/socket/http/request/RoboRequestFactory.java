@@ -73,21 +73,6 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		return null;
 	}
 
-	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> unitRef, final AttributeDescriptor<?> ad){
-		final Object val;
-		try {
-			val = unitRef.getAttribute(ad).get();
-		} catch (InterruptedException | ExecutionException e) {
-			SimpleLoggingUtil.error(getClass(), e.getMessage());
-			return null;
-		}
-		final ResponseAttributeDTO attributeDTO = new ResponseAttributeDTO();
-		attributeDTO.setId(ad.getAttributeName());
-		attributeDTO.setType(ad.getAttributeType().getTypeName());
-		attributeDTO.setValue(String.valueOf(val));
-		return attributeDTO;
-	}
-
 	// FIXME correct available methods according to the configuration
 	@Override
 	public Object processGet(ServerPathConfig pathConfig) {
@@ -143,6 +128,21 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	public Object processPost(final RoboReference<?> unitReference, final String message) {
 		final SocketDecoder<Object, ?> decoder = codecRegistry.getDecoder(unitReference.getMessageType());
 		return decoder != null ? decoder.decode(message) : null;
+	}
+
+	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> unitRef, final AttributeDescriptor<?> ad){
+		final Object val;
+		try {
+			val = unitRef.getAttribute(ad).get();
+		} catch (InterruptedException | ExecutionException e) {
+			SimpleLoggingUtil.error(getClass(), e.getMessage());
+			return null;
+		}
+		final ResponseAttributeDTO attributeDTO = new ResponseAttributeDTO();
+		attributeDTO.setId(ad.getAttributeName());
+		attributeDTO.setType(ad.getAttributeType().getTypeName());
+		attributeDTO.setValue(String.valueOf(val));
+		return attributeDTO;
 	}
 
 }

@@ -16,15 +16,14 @@
  */
 package com.robo4j.socket.http.util;
 
-import com.robo4j.socket.http.HttpMethod;
-import com.robo4j.socket.http.HttpVersion;
+import com.robo4j.logging.SimpleLoggingUtil;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
-import com.robo4j.socket.http.message.HttpRequestDenominator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.util.HashMap;
+
+import static com.robo4j.socket.http.util.ChannelBufferUtils.HTTP_DECORATED_REQUEST_EMPTY;
 
 /**
  * ChannelRequestBuffer
@@ -40,6 +39,16 @@ public class ChannelRequestBuffer {
 		requestBuffer = ByteBuffer.allocateDirect(ChannelBufferUtils.INIT_BUFFER_CAPACITY);
 	}
 
+	/**
+	 * read byte channel and extract {@link HttpDecoratedRequest} in case of not
+	 * readable channel provide empty decorated GET request
+	 * 
+	 * @param channel
+	 *            byte channel
+	 * @return decorated request {@link HttpDecoratedRequest}
+	 * @throws IOException
+	 *             exception
+	 */
 	public HttpDecoratedRequest getHttpDecoratedRequestByChannel(ByteChannel channel) throws IOException {
 		final StringBuilder sbBasic = new StringBuilder();
 		int readBytes = channel.read(requestBuffer);
@@ -52,8 +61,8 @@ public class ChannelRequestBuffer {
 			requestBuffer.clear();
 			return result;
 		} else {
-			return new HttpDecoratedRequest(new HashMap<>(),
-					new HttpRequestDenominator(HttpMethod.GET, HttpVersion.HTTP_1_1));
+			SimpleLoggingUtil.error(getClass(), "http decorated request issue: empty is provided");
+			return HTTP_DECORATED_REQUEST_EMPTY;
 		}
 	}
 }

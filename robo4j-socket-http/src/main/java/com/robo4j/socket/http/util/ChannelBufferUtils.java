@@ -54,6 +54,9 @@ public final class ChannelBufferUtils {
 	public static final int BUFFER_MARK_END = -1;
 	public static final int RESPONSE_JSON_GROUP = 2;
 
+	public static final HttpDecoratedRequest HTTP_DECORATED_REQUEST_EMPTY =  new HttpDecoratedRequest(new HashMap<>(),
+					new HttpRequestDenominator(HttpMethod.GET, HttpVersion.HTTP_1_1));
+
 	/**
 	 *
 	 * @param source
