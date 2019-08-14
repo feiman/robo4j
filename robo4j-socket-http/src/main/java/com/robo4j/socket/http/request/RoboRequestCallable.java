@@ -22,7 +22,6 @@ import com.robo4j.RoboReference;
 import com.robo4j.logging.SimpleLoggingUtil;
 import com.robo4j.socket.http.dto.ClassGetSetDTO;
 import com.robo4j.socket.http.dto.PathAttributeDTO;
-import com.robo4j.socket.http.dto.PathAttributeListDTO;
 import com.robo4j.socket.http.enums.StatusCode;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
 import com.robo4j.socket.http.message.HttpRequestDenominator;
@@ -93,23 +92,13 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 							.getDenominator();
 					final Set<String> requestAttributes = denominator.getAttributes()
 							.get(HttpPathUtils.ATTRIBUTES_PATH_VALUE);
+
+
 					if (requestAttributes == null) {
 						Collection<ServerPathConfig> pathConfigs = serverContext.getPathConfigByPath(decoratedRequest.getPathMethod().getPath());
 						unitDescription = factory.processGet(pathConfig.getRoboUnit(), pathConfigs);
-					} else if (requestAttributes.isEmpty()) {
-						RoboReference<?> unit = context.getReference(pathConfig.getRoboUnit().getId());
-
-						PathAttributeListDTO pathAttributes = new PathAttributeListDTO();
-						for(AttributeDescriptor<?> ad: unit.getKnownAttributes()){
-							PathAttributeDTO attributeDescriptor = new PathAttributeDTO();
-							attributeDescriptor.setName(ad.getAttributeName());
-							attributeDescriptor.setValue(ad.getAttributeType().getCanonicalName());
-							pathAttributes.addAttribute(attributeDescriptor);
-						}
-
-						unitDescription = ReflectUtils.createJson(pathAttributes);
 					} else {
-						RoboReference<?> unit = context.getReference(pathConfig.getRoboUnit().getId());
+						RoboReference<?> unit = pathConfig.getRoboUnit();
 
 						List<PathAttributeDTO> attributes = new ArrayList<>();
 						for (AttributeDescriptor<?> attr : unit.getKnownAttributes()) {

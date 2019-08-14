@@ -44,7 +44,7 @@ public class PathAttributeDTO {
         this.name = name;
     }
 
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 

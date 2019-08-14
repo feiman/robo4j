@@ -26,6 +26,8 @@ import com.robo4j.configuration.Configuration;
 import com.robo4j.socket.http.codec.StringMessage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -55,6 +57,7 @@ public class StringMessageUnit extends RoboUnit<StringMessage> {
 
     public StringMessageUnit(RoboContext context, String id) {
         super(StringMessage.class, context, id);
+        this.counter = new AtomicInteger(0);
     }
 
     @Override
@@ -90,5 +93,10 @@ public class StringMessageUnit extends RoboUnit<StringMessage> {
             return (R) messagesLatch;
         }
         return null;
+    }
+
+    @Override
+    public Collection<AttributeDescriptor<?>> getKnownAttributes() {
+        return Arrays.asList(DESCRIPTOR_MESSAGES_LATCH, DESCRIPTOR_MESSAGES_TOTAL, DESCRIPTOR_RECEIVED_MESSAGES);
     }
 }

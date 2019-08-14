@@ -220,7 +220,7 @@ class RoboRequestCallableTest {
 				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.POST),
 				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.PUT)));
 
-		final Path path = getResourcePath("httpGetRequestPathSensorSetupUnits.txt");
+		final Path path = getResourcePath("httpGetRequestPathSensorSetupUnit.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
@@ -233,6 +233,107 @@ class RoboRequestCallableTest {
 		}
 
 	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void initiatedServerContextGetRequestToSpecificUnitWithCodecAndAttributesOkResponseTest() throws Exception {
+		// sensorSetupUnit
+		final String sensorSetupUnitAttConfiguredName = "configured";
+		String observedRoboUnitName = "sensorSetupUnit";
+		String pathConfig = "/units/" + observedRoboUnitName ;
+
+		HttpResponseProcess expectedResponse = new HttpResponseProcess(pathConfig, observedRoboUnitName, HttpMethod.GET,
+				StatusCode.OK,"{\"name\":\"configured\",\"value\":\"true\"}");
+
+		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
+
+		RoboReference<?> sensorSetupUnitMock = getMockedRoboReference(observedRoboUnitName, LifecycleState.STARTED);
+		RoboReference<SimpleCommand> sensorSetupUnit = (RoboReference<SimpleCommand>) sensorSetupUnitMock;
+		when(sensorSetupUnit.getMessageType()).thenReturn(SimpleCommand.class);
+		AttributeDescriptor<Boolean> sensorSetupUnitConfiguredAttr = DefaultAttributeDescriptor.create(Boolean.class,
+				sensorSetupUnitAttConfiguredName);
+		mockServerUnitAttribute(sensorSetupUnit, sensorSetupUnitConfiguredAttr, true);
+		when(sensorSetupUnit.getKnownAttributes()).thenReturn(Collections.singletonList(sensorSetupUnitConfiguredAttr));
+
+		RoboReference<?> sensorLightUnit = getMockedRoboReference("sensor_light", LifecycleState.STARTED);
+		Collection<RoboReference<?>> units = Arrays.asList(sensorSetupUnit, sensorLightUnit);
+		when(roboContext.getUnits()).thenReturn(units);
+
+		ServerContext serverContext = mock(ServerContext.class);
+		RoboReference<Object> sensorSetupUnitMockReference = (RoboReference<Object>) sensorSetupUnitMock;
+		ServerPathConfig initiatedGetRequest = new ServerPathConfig(pathConfig, sensorSetupUnitMockReference,
+				HttpMethod.GET);
+		when(serverContext.getPathConfig(new PathHttpMethod(pathConfig, HttpMethod.GET)))
+				.thenReturn(initiatedGetRequest);
+
+		when(serverContext.getPathConfigByPath(pathConfig)).thenReturn(Arrays.asList(initiatedGetRequest,
+				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.POST),
+				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.PUT)));
+
+		final Path path = getResourcePath("httpGetRequestPathSensorSetupUnitWithAttributes.txt");
+
+		try (FileChannel fileChannel = FileChannel.open(path)) {
+			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
+			RoboRequestFactory factory = initRoboRequestFactory();
+
+			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
+			HttpResponseProcess process = callable.call();
+
+			assertEquals(expectedResponse, process);
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	void initiatedServerContextGetRequestToSpecificUnitWithCodecAndAttributesEmptyOkResponseTest() throws Exception {
+		// sensorSetupUnit
+		final String sensorSetupUnitAttConfiguredName = "configured";
+		String observedRoboUnitName = "sensorSetupUnit";
+		String pathConfig = "/units/" + observedRoboUnitName ;
+
+		HttpResponseProcess expectedResponse = new HttpResponseProcess(pathConfig, observedRoboUnitName, HttpMethod.GET,
+				StatusCode.OK,"[]");
+
+		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
+
+		RoboReference<?> sensorSetupUnitMock = getMockedRoboReference(observedRoboUnitName, LifecycleState.STARTED);
+		RoboReference<SimpleCommand> sensorSetupUnit = (RoboReference<SimpleCommand>) sensorSetupUnitMock;
+		when(sensorSetupUnit.getMessageType()).thenReturn(SimpleCommand.class);
+		AttributeDescriptor<Boolean> sensorSetupUnitConfiguredAttr = DefaultAttributeDescriptor.create(Boolean.class,
+				sensorSetupUnitAttConfiguredName);
+		mockServerUnitAttribute(sensorSetupUnit, sensorSetupUnitConfiguredAttr, true);
+		when(sensorSetupUnit.getKnownAttributes()).thenReturn(Collections.singletonList(sensorSetupUnitConfiguredAttr));
+
+		RoboReference<?> sensorLightUnit = getMockedRoboReference("sensor_light", LifecycleState.STARTED);
+		Collection<RoboReference<?>> units = Arrays.asList(sensorSetupUnit, sensorLightUnit);
+		when(roboContext.getUnits()).thenReturn(units);
+
+		ServerContext serverContext = mock(ServerContext.class);
+		RoboReference<Object> sensorSetupUnitMockReference = (RoboReference<Object>) sensorSetupUnitMock;
+		ServerPathConfig initiatedGetRequest = new ServerPathConfig(pathConfig, sensorSetupUnitMockReference,
+				HttpMethod.GET);
+		when(serverContext.getPathConfig(new PathHttpMethod(pathConfig, HttpMethod.GET)))
+				.thenReturn(initiatedGetRequest);
+
+		when(serverContext.getPathConfigByPath(pathConfig)).thenReturn(Arrays.asList(initiatedGetRequest,
+				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.POST),
+				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.PUT)));
+
+		final Path path = getResourcePath("httpGetRequestPathSensorSetupUnitWithAttributesEmpty.txt");
+
+		try (FileChannel fileChannel = FileChannel.open(path)) {
+			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
+			RoboRequestFactory factory = initRoboRequestFactory();
+
+			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
+			HttpResponseProcess process = callable.call();
+
+			assertEquals(expectedResponse, process);
+		}
+
+	}
+
 
 	@SuppressWarnings("unchecked")
 	private <T> void mockServerUnitAttribute(RoboReference<?> httpServerUnit, AttributeDescriptor<?> descriptor,
