@@ -60,7 +60,6 @@ public class ChannelRequestBuffer {
 			return result;
 		} else {
 			SimpleLoggingUtil.error(getClass(), "http decorated request issue: empty is provided");
-//			return HTTP_DECORATED_REQUEST_EMPTY;
 			requestBuffer.clear();
 			return null;
 		}

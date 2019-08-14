@@ -54,6 +54,8 @@ public final class HttpPathUtils {
 	public static final String DELIMITER_PATH_ATTRIBUTES = "?";
 	public static final String REGEX_ATTRIBUTE = "\\?";
 	public static final String REGEX_ATTRIBUTE_CONCAT = "&";
+	public static final ServerPathConfig DEFAULT_GET_SERVER_PATH_CONFIG = new ServerPathConfig(Utf8Constant.UTF8_SOLIDUS, null, HttpMethod.GET);
+	public static final PathHttpMethod DEFAULT_GET_SERVER_METHOD = new PathHttpMethod(Utf8Constant.UTF8_SOLIDUS, HttpMethod.GET);
 
 	public static String toPath(String first, String... rest) {
 		final StringBuilder sb = new StringBuilder();
@@ -108,8 +110,7 @@ public final class HttpPathUtils {
 			return HttpPathUtils.toHttpPathConfig(e, reference);
 		}).collect(Collectors.toMap(e -> new PathHttpMethod(e.getPath(), e.getMethod()), e -> e));
 
-		resultPaths.put(new PathHttpMethod(Utf8Constant.UTF8_SOLIDUS, HttpMethod.GET),
-				new ServerPathConfig(Utf8Constant.UTF8_SOLIDUS, null, HttpMethod.GET));
+		resultPaths.put(DEFAULT_GET_SERVER_METHOD, DEFAULT_GET_SERVER_PATH_CONFIG);
 		serverContext.addPaths(resultPaths);
 	}
 

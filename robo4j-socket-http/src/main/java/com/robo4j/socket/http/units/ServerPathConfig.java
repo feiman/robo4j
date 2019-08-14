@@ -63,7 +63,7 @@ public final class ServerPathConfig {
 	}
 
 	public List<String> getFilters() {
-		return Collections.unmodifiableList(filters);
+		return filters == null ? Collections.emptyList() : Collections.unmodifiableList(filters);
 	}
 
 	@Override

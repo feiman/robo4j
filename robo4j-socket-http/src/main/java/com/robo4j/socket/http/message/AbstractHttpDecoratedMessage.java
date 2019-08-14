@@ -20,7 +20,8 @@ import com.robo4j.socket.http.HttpHeaderFieldNames;
 import com.robo4j.socket.http.util.HttpHeaderBuilder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +38,7 @@ public abstract class AbstractHttpDecoratedMessage implements HttpMessage {
 	private final String version;
 	private int length;
 	private String message;
-	private List<String> callbacks = new ArrayList<>();
+	private List<String> callbacks = new LinkedList<>();
 
 	AbstractHttpDecoratedMessage(){
 		version = null;
@@ -55,7 +56,7 @@ public abstract class AbstractHttpDecoratedMessage implements HttpMessage {
 	public abstract HttpDenominator getDenominator();
 
 	public Map<String, String> getHeader() {
-		return new HashMap<>(headerBuilder.getMap());
+		return new LinkedHashMap<>(headerBuilder.getMap());
 	}
 
 	public String getHeaderValue(String key) {

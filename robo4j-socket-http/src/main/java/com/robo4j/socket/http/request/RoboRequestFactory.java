@@ -79,7 +79,7 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		final RoboReference<?> unitRef = pathConfig.getRoboUnit();
 		final SocketDecoder<?, ?> decoder = codecRegistry.getDecoder(unitRef.getMessageType());
 
-		if(unitRef.getMessageType().equals(Object.class) || decoder == null){
+		if(decoder == null){
 
 			final  List<ResponseAttributeDTO> attrList = new ArrayList<>();
 			for(AttributeDescriptor<?> ad: unitRef.getKnownAttributes()){
@@ -130,6 +130,7 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		return decoder != null ? decoder.decode(message) : null;
 	}
 
+	//TODO: improve
 	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> unitRef, final AttributeDescriptor<?> ad){
 		final Object val;
 		try {

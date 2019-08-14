@@ -30,7 +30,6 @@ import com.robo4j.socket.http.units.test.HttpTwoAttributesGetController;
 import com.robo4j.socket.http.units.test.StringConsumer;
 import com.robo4j.socket.http.util.HttpPathConfigJsonBuilder;
 import com.robo4j.util.SystemUtil;
-import org.junit.jupiter.api.Test;
 
 import static com.robo4j.socket.http.units.RoboHttpPingPongTest.HOST_SYSTEM;
 import static com.robo4j.socket.http.units.RoboHttpPingPongTest.PACKAGE_CODECS;
@@ -59,7 +58,6 @@ public class RoboHttpUnitGetTestApp {
 	 * @throws Exception
 	 *             exception
 	 */
-	@Test
 	public void systemWithHttpServerOnlyTest() throws Exception {
 		final String httpServerUnitName = "http_server";
 		final HttpPathConfigJsonBuilder pathBuilder = HttpPathConfigJsonBuilder.Builder().addPath(httpServerUnitName,

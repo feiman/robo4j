@@ -117,7 +117,7 @@ class ChannelRequestBufferTest {
 				HttpVersion.HTTP_1_1);
 		//@formatter:off
 		final Map<String, String> header = Map.of(
-				"Host", "localhost:8061",
+				"Host", "127.0.0.1:8061",
 				"User-Agent", "PostmanRuntime/7.15.2",
 				"Accept", "*/*",
 				"Cache-Control", "no-cache",
@@ -137,7 +137,7 @@ class ChannelRequestBufferTest {
 			assertNotNull(request);
 			assertFalse(expectedHttpDecoratedRequest.getHeader().isEmpty());
 			assertEquals(expectedHttpDecoratedRequest.getHeader(), request.getHeader());
-			assertEquals(request.getHost(), "localhost");
+			assertEquals(request.getHost(), "127.0.0.1");
 			assertEquals(request.getPort().intValue(), 8061);
 			assertEquals(expectedHttpDecoratedRequest, request);
 		}
