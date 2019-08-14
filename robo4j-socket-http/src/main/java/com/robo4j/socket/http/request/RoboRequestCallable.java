@@ -33,6 +33,7 @@ import com.robo4j.socket.http.util.JsonUtil;
 import com.robo4j.socket.http.util.ReflectUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -93,7 +94,8 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 					final Set<String> requestAttributes = denominator.getAttributes()
 							.get(HttpPathUtils.ATTRIBUTES_PATH_VALUE);
 					if (requestAttributes == null) {
-							unitDescription = factory.processGet(pathConfig);
+						Collection<ServerPathConfig> pathConfigs = serverContext.getPathConfigByPath(decoratedRequest.getPathMethod().getPath());
+						unitDescription = factory.processGet(pathConfig.getRoboUnit(), pathConfigs);
 					} else if (requestAttributes.isEmpty()) {
 						RoboReference<?> unit = context.getReference(pathConfig.getRoboUnit().getId());
 

@@ -1,0 +1,8 @@
+GET /units/sensorSetupUnit HTTP/1.1
+User-Agent: PostmanRuntime/7.15.2
+Accept: */*
+Cache-Control: no-cache
+Postman-Token: 7de85c36-5d98-452e-aa54-bdf63052e3a5
+Host: 127.0.0.1:8061
+Accept-Encoding: gzip, deflate
+Connection: keep-alive

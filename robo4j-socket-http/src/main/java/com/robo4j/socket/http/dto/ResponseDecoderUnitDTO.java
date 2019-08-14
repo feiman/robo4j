@@ -30,6 +30,7 @@ public class ResponseDecoderUnitDTO {
     private String id;
     private String codec;
     private List<HttpMethod> methods;
+    private List<ResponseAttributeDTO> attributes;
 
 
     public ResponseDecoderUnitDTO() {
@@ -59,12 +60,21 @@ public class ResponseDecoderUnitDTO {
         this.methods = methods;
     }
 
+    public List<ResponseAttributeDTO> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(List<ResponseAttributeDTO> attributes) {
+        this.attributes = attributes;
+    }
+
     @Override
     public String toString() {
         return "ResponseDecoderUnitDTO{" +
                 "id='" + id + '\'' +
                 ", codec='" + codec + '\'' +
                 ", methods=" + methods +
+                ", attributes=" + attributes +
                 '}';
     }
 }

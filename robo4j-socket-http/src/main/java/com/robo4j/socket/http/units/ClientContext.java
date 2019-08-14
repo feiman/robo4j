@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * configuring http client context
@@ -67,6 +68,15 @@ public final class ClientContext implements SocketContext<ClientPathConfig> {
 	@Override
 	public ClientPathConfig getPathConfig(PathHttpMethod pathMethod) {
 		return pathConfigs.getOrDefault(pathMethod, ClientPathConfig.EMPTY);
+	}
+
+	@Override
+	public Collection<ClientPathConfig> getPathConfigByPath(String path) {
+		//@formatter:off
+		return pathConfigs.entrySet().stream()
+				.filter(e -> e.getKey().getPath().equals(path))
+				.map(Map.Entry::getValue).collect(Collectors.toList());
+		//@formatter:on
 	}
 
 	@Override

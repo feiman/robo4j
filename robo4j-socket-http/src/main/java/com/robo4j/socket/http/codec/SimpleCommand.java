@@ -16,6 +16,7 @@
  */
 package com.robo4j.socket.http.codec;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -26,7 +27,8 @@ import java.util.Objects;
  * @author Marcus Hirt (@hirt)
  * @author Miro Wengner (@miragemiko)
  */
-public class SimpleCommand {
+public class SimpleCommand implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	private String value;
 	private String type;

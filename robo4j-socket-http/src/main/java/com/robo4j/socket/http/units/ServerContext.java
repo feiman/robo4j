@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Configuration for http server unit {@link HttpServerUnit} Server context
@@ -68,6 +69,15 @@ public class ServerContext implements SocketContext<ServerPathConfig> {
 	@Override
 	public ServerPathConfig getPathConfig(PathHttpMethod pathMethod) {
 		return pathConfigs.get(pathMethod);
+	}
+
+	@Override
+	public Collection<ServerPathConfig> getPathConfigByPath(String path) {
+		//@formatter:off
+		return pathConfigs.entrySet().stream()
+				.filter(e -> e.getKey().getPath().equals(path))
+				.map(Map.Entry::getValue).collect(Collectors.toList());
+		//@formatter:on
 	}
 
 	/**

@@ -28,6 +28,7 @@ import com.robo4j.socket.http.message.HttpRequestDenominator;
 import com.robo4j.socket.http.units.test.HttpOneAttributeGetController;
 import com.robo4j.socket.http.units.test.HttpTwoAttributesGetController;
 import com.robo4j.socket.http.units.test.StringConsumer;
+import com.robo4j.socket.http.units.test.StringMessageUnit;
 import com.robo4j.socket.http.util.HttpPathConfigJsonBuilder;
 import com.robo4j.util.SystemUtil;
 
@@ -59,9 +60,9 @@ public class RoboHttpUnitGetTestApp {
 	 *             exception
 	 */
 	public void systemWithHttpServerOnlyTest() throws Exception {
-		final String httpServerUnitName = "http_server";
-		final HttpPathConfigJsonBuilder pathBuilder = HttpPathConfigJsonBuilder.Builder().addPath(httpServerUnitName,
-				HttpMethod.GET);
+		final HttpPathConfigJsonBuilder pathBuilder = HttpPathConfigJsonBuilder.Builder()
+				.addPath(HttpServerUnit.NAME, HttpMethod.GET)
+				.addPath(StringMessageUnit.NAME, HttpMethod.GET);
 
 		//@formatter:off
 		Configuration systemConfiguration = new ConfigurationBuilder()
@@ -73,13 +74,14 @@ public class RoboHttpUnitGetTestApp {
 		//@formatter:on
 
 		//@formatter:off
-		Configuration config = new ConfigurationBuilder()
+		Configuration configServer = new ConfigurationBuilder()
 				.addInteger(PROPERTY_SOCKET_PORT, SERVER_PORT)
 				.addString("packages", "com.robo4j.socket.http.codec")
 				.addString(PROPERTY_UNIT_PATHS_CONFIG, pathBuilder.build())
 				.build();
 		//@formatter:on
-		builder.add(HttpServerUnit.class, config, httpServerUnitName);
+		builder.add(HttpServerUnit.class, configServer, HttpServerUnit.NAME);
+		builder.add(StringMessageUnit.class, StringMessageUnit.NAME);
 		RoboContext system = builder.build();
 
 		system.start();

@@ -19,10 +19,12 @@ package com.robo4j.socket.http.request;
 
 import com.robo4j.AttributeDescriptor;
 import com.robo4j.ConfigurationException;
+import com.robo4j.DefaultAttributeDescriptor;
 import com.robo4j.LifecycleState;
 import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
 import com.robo4j.socket.http.HttpMethod;
+import com.robo4j.socket.http.codec.SimpleCommand;
 import com.robo4j.socket.http.dto.ResponseUnitDTO;
 import com.robo4j.socket.http.enums.StatusCode;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
@@ -42,6 +44,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,9 +82,7 @@ class RoboRequestCallableTest {
 			HttpResponseProcess process = callable.call();
 
 			assertEquals(expectedResponse, process);
-
 		}
-
 	}
 
 	@Test
@@ -122,7 +123,7 @@ class RoboRequestCallableTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	void initiatedServerContextGetRequestToSpecificUnitNoAttributesOkResponseTest() throws Exception {
+	void initiatedServerContextGetRequestToSpecificUnitAttributesOkResponseTest() throws Exception {
 
 		String observedRoboUnitName = "http_server";
 		String pathConfig = "/units/" + observedRoboUnitName;
@@ -145,10 +146,8 @@ class RoboRequestCallableTest {
 
 		String pathsString = HttpPathConfigJsonBuilder.Builder().addPath(observedRoboUnitName, HttpMethod.GET).build();
 
-		when(httpServerUnit.getKnownAttributes()).thenReturn(
-				Arrays.asList(HttpServerUnit.DESCRIPTOR_ADDRESS,
-						HttpServerUnit.DESCRIPTOR_PORT,
-						HttpServerUnit.DESCRIPTOR_PATHS));
+		when(httpServerUnit.getKnownAttributes()).thenReturn(Arrays.asList(HttpServerUnit.DESCRIPTOR_ADDRESS,
+				HttpServerUnit.DESCRIPTOR_PORT, HttpServerUnit.DESCRIPTOR_PATHS));
 
 		mockServerUnitAttribute(httpServerUnit, HttpServerUnit.DESCRIPTOR_ADDRESS, "127.0.0.1");
 		mockServerUnitAttribute(httpServerUnit, HttpServerUnit.DESCRIPTOR_PORT, 8061);
@@ -159,7 +158,7 @@ class RoboRequestCallableTest {
 		when(serverContext.getPathConfig(new PathHttpMethod(pathConfig, HttpMethod.GET)))
 				.thenReturn(new ServerPathConfig(pathConfig, httpServerUnit, HttpMethod.GET));
 
-		final Path path = getResourcePath("httpGetRequestPathUnitsSpecific.txt");
+		final Path path = getResourcePath("httpGetRequestPathHttpServerUnit.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
@@ -172,11 +171,74 @@ class RoboRequestCallableTest {
 		}
 	}
 
+	/**
+	 * test Robo system with "sensorSetupUnit" that does accept
+	 * {@link SimpleCommand} codec type. The "sensorSetupUnit" does contain
+	 * attribute field "configured" of boolean type. The unit does support GET, POST
+	 * {@link HttpMethod}
+	 *
+	 * @throws Exception
+	 *             exception
+	 */
 	@SuppressWarnings("unchecked")
-	private void mockServerUnitAttribute(RoboReference<Object> httpServerUnit, AttributeDescriptor<?> descriptor,
-			Object value) throws Exception {
-		final Future<Object> mockedFutureAddress = mock(Future.class);
-		when(httpServerUnit.getAttribute((AttributeDescriptor<Object>)descriptor)).thenReturn(mockedFutureAddress);
+	@Test
+	void initiatedServerContextGetRequestToSpecificUnitWithCodecOkResponseTest() throws Exception {
+		String observedRoboUnitName = "sensorSetupUnit";
+		String pathConfig = "/units/" + observedRoboUnitName;
+
+		HttpResponseProcess expectedResponse = new HttpResponseProcess(pathConfig, observedRoboUnitName, HttpMethod.GET,
+				StatusCode.OK,
+				"{\"id\":\"sensorSetupUnit\",\"codec\":\"com.robo4j.socket.http.codec.SimpleCommand\","
+						+ "\"methods\":[\"GET\",\"POST\",\"PUT\"],\"attributes\":[{\"id\":\"configured\","
+						+ "\"type\":\"java.lang.Boolean\",\"value\":\"true\"}]}");
+
+		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
+
+		// sensorSetupUnit
+		final String sensorSetupUnitAttConfiguredName = "configured";
+
+		RoboReference<?> sensorSetupUnitMock = getMockedRoboReference(observedRoboUnitName, LifecycleState.STARTED);
+		RoboReference<SimpleCommand> sensorSetupUnit = (RoboReference<SimpleCommand>) sensorSetupUnitMock;
+		when(sensorSetupUnit.getMessageType()).thenReturn(SimpleCommand.class);
+		AttributeDescriptor<Boolean> sensorSetupUnitConfiguredAttr = DefaultAttributeDescriptor.create(Boolean.class,
+				sensorSetupUnitAttConfiguredName);
+		mockServerUnitAttribute(sensorSetupUnit, sensorSetupUnitConfiguredAttr, true);
+		when(sensorSetupUnit.getKnownAttributes()).thenReturn(Collections.singletonList(sensorSetupUnitConfiguredAttr));
+
+		RoboReference<?> sensorLightUnit = getMockedRoboReference("sensor_light", LifecycleState.STARTED);
+		Collection<RoboReference<?>> units = Arrays.asList(sensorSetupUnit, sensorLightUnit);
+		when(roboContext.getUnits()).thenReturn(units);
+
+		ServerContext serverContext = mock(ServerContext.class);
+		RoboReference<Object> sensorSetupUnitMockReference = (RoboReference<Object>) sensorSetupUnitMock;
+		ServerPathConfig initiatedGetRequest = new ServerPathConfig(pathConfig, sensorSetupUnitMockReference,
+				HttpMethod.GET);
+		when(serverContext.getPathConfig(new PathHttpMethod(pathConfig, HttpMethod.GET)))
+				.thenReturn(initiatedGetRequest);
+
+		when(serverContext.getPathConfigByPath(pathConfig)).thenReturn(Arrays.asList(initiatedGetRequest,
+				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.POST),
+				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.PUT)));
+
+		final Path path = getResourcePath("httpGetRequestPathSensorSetupUnits.txt");
+
+		try (FileChannel fileChannel = FileChannel.open(path)) {
+			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
+			RoboRequestFactory factory = initRoboRequestFactory();
+
+			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
+			HttpResponseProcess process = callable.call();
+
+			assertEquals(expectedResponse, process);
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void mockServerUnitAttribute(RoboReference<?> httpServerUnit, AttributeDescriptor<?> descriptor,
+			T value) throws Exception {
+		final Future<T> mockedFutureAddress = mock(Future.class);
+		when(httpServerUnit.getAttribute((AttributeDescriptor<T>) descriptor)).thenReturn(mockedFutureAddress);
 		when(mockedFutureAddress.get()).thenReturn(value);
 	}
 

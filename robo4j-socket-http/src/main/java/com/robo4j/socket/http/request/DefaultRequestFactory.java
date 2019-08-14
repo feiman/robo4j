@@ -20,6 +20,8 @@ import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
 import com.robo4j.socket.http.units.ServerPathConfig;
 
+import java.util.Collection;
+
 /**
  * @author Marcus Hirt (@hirt)
  * @author Miro Wengner (@miragemiko)
@@ -28,7 +30,7 @@ public interface DefaultRequestFactory<ResponseType> {
 
 	ResponseType processGet(RoboContext context);
 
-	ResponseType processGet(ServerPathConfig pathConfig);
+	ResponseType processGet(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfig);
 
 	ResponseType processServerGet(ServerPathConfig pathConfig);
 

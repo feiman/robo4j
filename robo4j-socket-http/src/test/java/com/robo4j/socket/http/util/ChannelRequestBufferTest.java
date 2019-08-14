@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
 class ChannelRequestBufferTest {
 
 	@Test
-	void httpDecoratedRequestByChannelReadTest() throws IOException {
+	void httpDecoratedRequestByEmptyChannelReadTest() throws IOException {
 
 		ByteChannel channel = mock(ByteChannel.class);
 		when(channel.read(any())).thenReturn(-1);
@@ -58,7 +58,7 @@ class ChannelRequestBufferTest {
 	}
 
 	@Test
-	void httpDecoratedRequestByChannel_Get_default_path_curl_Test() throws Exception {
+	void httpDecoratedRequestByChannelGetDefaultPathCurlTest() throws Exception {
 
 		final HttpRequestDenominator denominator = new HttpRequestDenominator(HttpMethod.GET, "/",
 				HttpVersion.HTTP_1_1);
@@ -81,7 +81,7 @@ class ChannelRequestBufferTest {
 	}
 
 	@Test
-	void httpDecoratedRequestByChannel_Get_units_path_Test() throws Exception {
+	void httpDecoratedRequestByChannelGetUnitsPathNotSupported_Test() throws Exception {
 
 		final HttpRequestDenominator denominator = new HttpRequestDenominator(HttpMethod.GET, "/units/",
 				HttpVersion.HTTP_1_1);
@@ -111,7 +111,7 @@ class ChannelRequestBufferTest {
 	}
 
 	@Test
-	void httpDecoratedRequestByChannel_Get_specific_unit_Test() throws Exception {
+	void httpDecoratedRequestByChannelGetSpecificUnitTest() throws Exception {
 
 		final HttpRequestDenominator denominator = new HttpRequestDenominator(HttpMethod.GET, "/units/http_server",
 				HttpVersion.HTTP_1_1);
@@ -128,7 +128,7 @@ class ChannelRequestBufferTest {
 		//@formatter:on
 		final HttpDecoratedRequest expectedHttpDecoratedRequest = new HttpDecoratedRequest(header, denominator);
 
-		Path path = getResourcePath("httpGetRequestPathUnitsSpecific.txt");
+		Path path = getResourcePath("httpGetRequestPathHttpServerUnit.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			ChannelRequestBuffer channelRequestBuffer = new ChannelRequestBuffer();
@@ -141,8 +141,9 @@ class ChannelRequestBufferTest {
 			assertEquals(request.getPort().intValue(), 8061);
 			assertEquals(expectedHttpDecoratedRequest, request);
 		}
-
 	}
+
+
 
 
 }

@@ -37,6 +37,8 @@ public interface SocketContext<T> {
 
 	T getPathConfig(PathHttpMethod pathMethod);
 
+	Collection<T> getPathConfigByPath(String path);
+
 	void putProperty(String key, Object val);
 
 	<E> E getProperty(Class<E> clazz, String key);

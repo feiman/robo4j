@@ -20,7 +20,6 @@ import com.robo4j.AttributeDescriptor;
 import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
 import com.robo4j.logging.SimpleLoggingUtil;
-import com.robo4j.socket.http.HttpMethod;
 import com.robo4j.socket.http.dto.ResponseAttributeDTO;
 import com.robo4j.socket.http.dto.ResponseDecoderUnitDTO;
 import com.robo4j.socket.http.dto.ResponseUnitDTO;
@@ -32,7 +31,8 @@ import com.robo4j.socket.http.util.JsonUtil;
 import com.robo4j.socket.http.util.ReflectUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
  * @author Miro Wengner (@miragemiko)
  */
 public class RoboRequestFactory implements DefaultRequestFactory<Object> {
-	private static final List<HttpMethod> GET_POST_METHODS = Arrays.asList(HttpMethod.GET, HttpMethod.POST);
 	private final CodecRegistry codecRegistry;
 
 	public RoboRequestFactory(final CodecRegistry codecRegistry) {
@@ -57,54 +56,53 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	 *
 	 * @param context
 	 *            robo context
-	 * @return descripton of desired context
+	 * @return description of desired context
 	 */
 	@Override
 	public Object processGet(RoboContext context) {
-		if (!context.getUnits().isEmpty()) {
-
-			final List<ResponseUnitDTO> unitList = context.getUnits().stream()
-					.map(u -> new ResponseUnitDTO(u.getId(), u.getState())).collect(Collectors.toList());
-			unitList.add(0, new ResponseUnitDTO(context.getId(), context.getState()));
-			return JsonUtil.toJsonArray(unitList);
-		} else {
+		if (context.getUnits().isEmpty()) {
 			SimpleLoggingUtil.error(getClass(), "internal error: no units available");
+			return null;
+		} else {
+			final List<ResponseUnitDTO> units = new LinkedList<>();
+			for(RoboReference<?> rf : context.getUnits()){
+				units.add(new ResponseUnitDTO(rf.getId(), rf.getState()));
+			}
+			units.add(0, new ResponseUnitDTO(context.getId(), context.getState()));
+			return JsonUtil.toJsonArray(units);
 		}
-		return null;
 	}
 
 	// FIXME correct available methods according to the configuration
 	@Override
-	public Object processGet(ServerPathConfig pathConfig) {
-		final RoboReference<?> unitRef = pathConfig.getRoboUnit();
+	public Object processGet(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfigs) {
+		final RoboReference<?> unitRef = roboReference;
 		final SocketDecoder<?, ?> decoder = codecRegistry.getDecoder(unitRef.getMessageType());
 
-		if(decoder == null){
+		final  List<ResponseAttributeDTO> attrList = new ArrayList<>();
+		for(AttributeDescriptor<?> ad: unitRef.getKnownAttributes()){
 
-			final  List<ResponseAttributeDTO> attrList = new ArrayList<>();
-			for(AttributeDescriptor<?> ad: unitRef.getKnownAttributes()){
-
-				ResponseAttributeDTO attributeDTO = createResponseAttributeDTO(unitRef, ad);
-				if(attributeDTO != null){
-					if(ad.getAttributeName().equals(HttpServerUnit.ATTR_PATHS)){
-						attributeDTO.setType("java.util.ArrayList");
-					}
-					attrList.add(attributeDTO);
+			ResponseAttributeDTO attributeDTO = createResponseAttributeDTO(unitRef, ad);
+			if(attributeDTO != null){
+				if(ad.getAttributeName().equals(HttpServerUnit.ATTR_PATHS)){
+					attributeDTO.setType("java.util.ArrayList");
 				}
-
+				attrList.add(attributeDTO);
 			}
-
-			 return JsonUtil.toJsonArrayServer(attrList);
-
-		} else {
-			final ResponseDecoderUnitDTO result = new ResponseDecoderUnitDTO();
-			result.setId(unitRef.getId());
-			result.setCodec(decoder.getDecodedClass().getName());
-			result.setMethods(GET_POST_METHODS);
-			return ReflectUtils.createJson(result);
 		}
 
-
+		if(decoder == null){
+			return JsonUtil.toJsonArrayServer(attrList);
+		} else {
+			final ResponseDecoderUnitDTO responseDecoderUnitDTO = new ResponseDecoderUnitDTO();
+			responseDecoderUnitDTO.setId(unitRef.getId());
+			responseDecoderUnitDTO.setCodec(decoder.getDecodedClass().getName());
+			responseDecoderUnitDTO.setMethods(pathConfigs.stream()
+					.map(ServerPathConfig::getMethod)
+					.collect(Collectors.toList()));
+			responseDecoderUnitDTO.setAttributes(attrList);
+			return ReflectUtils.createJson(responseDecoderUnitDTO);
+		}
 	}
 
 	@Override
