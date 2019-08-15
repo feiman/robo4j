@@ -19,9 +19,12 @@ package com.robo4j.socket.http.util;
 import com.robo4j.socket.http.HttpHeaderFieldNames;
 import com.robo4j.socket.http.HttpMethod;
 import com.robo4j.socket.http.HttpVersion;
+import com.robo4j.socket.http.enums.StatusCode;
 import com.robo4j.socket.http.message.AbstractHttpDecoratedMessage;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
+import com.robo4j.socket.http.message.HttpDecoratedResponse;
 import com.robo4j.socket.http.message.HttpRequestDenominator;
+import com.robo4j.socket.http.message.HttpResponseDenominator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -44,6 +47,23 @@ import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_HEADER;
  * @author Miro Wengner (@miragemiko)
  */
 public final class ChannelBufferUtils {
+
+	/**
+	 * Helper
+	 *
+	 * @param message
+	 *            string message
+	 * @return parsed message
+	 */
+	private static MessageDecorationHelper extractMessageDecoratorValues(String message) {
+		final MessageDecorationHelper helper = new MessageDecorationHelper();
+		helper.headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER);
+		helper.header = helper.headerAndBody[POSITION_HEADER].split("[" + HTTP_NEW_LINE + "]+");
+		helper.firstLine = RoboHttpUtils.correctLine(helper.header[0]);
+		helper.tokens = helper.firstLine.split(HttpConstant.HTTP_EMPTY_SEP);
+		helper.paramArray = Arrays.copyOfRange(helper.header, 1, helper.header.length);
+		return helper;
+	}
 
 	public static final Pattern RESPONSE_SPRING_PATTERN = Pattern.compile("^(\\d.\r\n)?(.*)(\r\n)?");
 	/**
@@ -127,24 +147,55 @@ public final class ChannelBufferUtils {
 		return Arrays.equals(stopWindow, window);
 	}
 
+	private static final class MessageDecorationHelper {
+		private String[] headerAndBody;
+		private String[] header;
+		private String firstLine;
+		private String[] tokens;
+		private String[] paramArray;
+
+		private MessageDecorationHelper() {
+		}
+	}
+
+	public static HttpDecoratedResponse extractDecoratedResponseByStringMessage(String message) {
+		final MessageDecorationHelper helper = extractMessageDecoratorValues(message);
+
+		final String version = helper.tokens[0];
+		final StatusCode statusCode = StatusCode.getByCode(Integer.valueOf(helper.tokens[1]));
+		final Map<String, String> headerParams = ChannelBufferUtils.getHeaderParametersByArray(helper.paramArray);
+
+		HttpResponseDenominator denominator = new HttpResponseDenominator(statusCode, HttpVersion.getByValue(version));
+		HttpDecoratedResponse result = new HttpDecoratedResponse(headerParams, denominator);
+		if (helper.headerAndBody.length > 1) {
+			if (headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)) {
+				result.setLength(ChannelBufferUtils.calculateMessageSize(helper.headerAndBody[POSITION_HEADER].length(),
+						headerParams));
+			} else {
+				result.setLength(helper.headerAndBody[POSITION_BODY].length());
+			}
+			Matcher matcher = ChannelBufferUtils.RESPONSE_SPRING_PATTERN.matcher(helper.headerAndBody[POSITION_BODY]);
+			if (matcher.find()) {
+				result.addMessage(matcher.group(ChannelBufferUtils.RESPONSE_JSON_GROUP));
+			}
+		}
+
+		return result;
+	}
+
 	/**
 	 *
 	 * @param message
 	 *            message
 	 * @return http decorate request
 	 */
-	// TODO: simplify
 	public static HttpDecoratedRequest extractDecoratedRequestByStringMessage(String message) {
-		final String[] headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER);
-		final String[] header = headerAndBody[POSITION_HEADER].split("[" + HTTP_NEW_LINE + "]+");
-		final String firstLine = RoboHttpUtils.correctLine(header[0]);
-		final String[] tokens = firstLine.split(HttpConstant.HTTP_EMPTY_SEP);
-		final String[] paramArray = Arrays.copyOfRange(header, 1, header.length);
+		final MessageDecorationHelper helper = extractMessageDecoratorValues(message);
 
-		final HttpMethod method = HttpMethod.getByName(tokens[HttpMessageUtils.METHOD_KEY_POSITION]);
-		final String path = tokens[HttpMessageUtils.URI_VALUE_POSITION];
-		final String version = tokens[HttpMessageUtils.VERSION_POSITION];
-		final Map<String, String> headerParams = getHeaderParametersByArray(paramArray);
+		final HttpMethod method = HttpMethod.getByName(helper.tokens[HttpMessageUtils.METHOD_KEY_POSITION]);
+		final String path = helper.tokens[HttpMessageUtils.URI_VALUE_POSITION];
+		final String version = helper.tokens[HttpMessageUtils.VERSION_POSITION];
+		final Map<String, String> headerParams = getHeaderParametersByArray(helper.paramArray);
 
 		final HttpRequestDenominator denominator;
 		if (path.contains(HttpPathUtils.DELIMITER_PATH_ATTRIBUTES)) {
@@ -156,9 +207,9 @@ public final class ChannelBufferUtils {
 		HttpDecoratedRequest result = new HttpDecoratedRequest(headerParams, denominator);
 
 		if (headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)) {
-			result.setLength(calculateMessageSize(headerAndBody[POSITION_HEADER].length(), headerParams));
-			if (headerAndBody.length > 1) {
-				result.addMessage(headerAndBody[POSITION_BODY]);
+			result.setLength(calculateMessageSize(helper.headerAndBody[POSITION_HEADER].length(), headerParams));
+			if (helper.headerAndBody.length > 1) {
+				result.addMessage(helper.headerAndBody[POSITION_BODY]);
 			}
 		}
 
@@ -219,7 +270,7 @@ public final class ChannelBufferUtils {
 	 *            params array
 	 * @return map
 	 */
-	static Map<String, String> getHeaderParametersByArray(String[] paramArray) {
+	private static Map<String, String> getHeaderParametersByArray(String[] paramArray) {
 		final Map<String, String> result = new HashMap<>();
 		for (int i = 0; i < paramArray.length; i++) {
 
@@ -231,7 +282,7 @@ public final class ChannelBufferUtils {
 		return result;
 	}
 
-	static Integer calculateMessageSize(int headerValue, Map<String, String> headerParams) {
+	private static Integer calculateMessageSize(int headerValue, Map<String, String> headerParams) {
 		return headerValue + HTTP_HEADER_BODY_DELIMITER.length()
 				+ Integer.valueOf(headerParams.get(HttpHeaderFieldNames.CONTENT_LENGTH));
 	}

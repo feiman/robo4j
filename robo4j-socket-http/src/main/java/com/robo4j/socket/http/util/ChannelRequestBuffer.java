@@ -50,18 +50,21 @@ public class ChannelRequestBuffer {
 	public HttpDecoratedRequest getHttpDecoratedRequestByChannel(ByteChannel channel) throws IOException {
 		final StringBuilder sbBasic = new StringBuilder();
 		int readBytes = channel.read(requestBuffer);
-		if (readBytes != ChannelBufferUtils.BUFFER_MARK_END) {
-			requestBuffer.flip();
-			ChannelBufferUtils.addToStringBuilder(sbBasic, requestBuffer, readBytes);
-			final HttpDecoratedRequest result = ChannelBufferUtils
-					.extractDecoratedRequestByStringMessage(sbBasic.toString());
-			ChannelBufferUtils.readChannelBuffer(result, channel, requestBuffer, readBytes);
+		try {
+			if (readBytes != ChannelBufferUtils.BUFFER_MARK_END) {
+				requestBuffer.flip();
+				ChannelBufferUtils.addToStringBuilder(sbBasic, requestBuffer, readBytes);
+				final HttpDecoratedRequest result = ChannelBufferUtils
+						.extractDecoratedRequestByStringMessage(sbBasic.toString());
+				ChannelBufferUtils.readChannelBuffer(result, channel, requestBuffer, readBytes);
+				return result;
+			} else {
+				SimpleLoggingUtil.error(getClass(), "http decorated request issue: empty is provided");
+				return null;
+			}
+		} finally {
 			requestBuffer.clear();
-			return result;
-		} else {
-			SimpleLoggingUtil.error(getClass(), "http decorated request issue: empty is provided");
-			requestBuffer.clear();
-			return null;
 		}
+
 	}
 }
