@@ -19,7 +19,6 @@ package com.robo4j.socket.http.request;
 import com.robo4j.AttributeDescriptor;
 import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
-import com.robo4j.logging.SimpleLoggingUtil;
 import com.robo4j.socket.http.dto.ClassGetSetDTO;
 import com.robo4j.socket.http.dto.PathAttributeDTO;
 import com.robo4j.socket.http.dto.ResponseAttributeDTO;
@@ -55,62 +54,52 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	}
 
 	/**
-	 * Generic robo context overview. It returns all units registered into the context including system id.
-	 * The 1st position is reserved for the system
+	 * Generic robo context overview. It returns all units registered into the
+	 * context including system id. The 1st position is reserved for the system
 	 *
 	 * @param context
 	 *            robo context
 	 * @return description of desired context
 	 */
 	@Override
-	public Object processGet(RoboContext context) {
-		if (context.getUnits().isEmpty()) {
-			SimpleLoggingUtil.error(getClass(), "internal error: no units available");
-			return null;
-		} else {
-			final List<ResponseUnitDTO> units = new LinkedList<>();
-			for(RoboReference<?> rf : context.getUnits()){
-				units.add(new ResponseUnitDTO(rf.getId(), rf.getState()));
-			}
-			units.add(0, new ResponseUnitDTO(context.getId(), context.getState()));
-			return JsonUtil.toJsonArray(units);
+	public Object createRoboContextResponse(RoboContext context) {
+		final List<ResponseUnitDTO> units = new LinkedList<>();
+		for (RoboReference<?> rf : context.getUnits()) {
+			units.add(new ResponseUnitDTO(rf.getId(), rf.getState()));
 		}
+		units.add(0, new ResponseUnitDTO(context.getId(), context.getState()));
+		return JsonUtil.toJsonArray(units);
 	}
 
 	@Override
-	public Object processGet(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfigs) {
-		final RoboReference<?> unitRef = roboReference;
-		final SocketDecoder<?, ?> decoder = codecRegistry.getDecoder(unitRef.getMessageType());
+	public Object createRoboUnitResponse(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfigs) throws InterruptedException, ExecutionException {
+		final SocketDecoder<?, ?> decoder = codecRegistry.getDecoder(roboReference.getMessageType());
 
-		final  List<ResponseAttributeDTO> attrList = new ArrayList<>();
-		for(AttributeDescriptor<?> ad: unitRef.getKnownAttributes()){
-
-			ResponseAttributeDTO attributeDTO = createResponseAttributeDTO(unitRef, ad);
-			if(attributeDTO != null){
-				if(ad.getAttributeName().equals(HttpServerUnit.ATTR_PATHS)){
-					attributeDTO.setType("java.util.ArrayList");
-				}
-				attrList.add(attributeDTO);
+		final List<ResponseAttributeDTO> attrList = new LinkedList<>();
+		for (AttributeDescriptor<?> ad : roboReference.getKnownAttributes()) {
+			ResponseAttributeDTO attributeDTO = createResponseAttributeDTO(roboReference, ad);
+			if (ad.getAttributeName().equals(HttpServerUnit.ATTR_PATHS)) {
+				attributeDTO.setType("java.util.ArrayList");
 			}
+			attrList.add(attributeDTO);
 		}
 
-		if(decoder == null){
+		if (decoder == null) {
 			return JsonUtil.toJsonArrayServer(attrList);
 		} else {
 			final ResponseDecoderUnitDTO responseDecoderUnitDTO = new ResponseDecoderUnitDTO();
-			responseDecoderUnitDTO.setId(unitRef.getId());
+			responseDecoderUnitDTO.setId(roboReference.getId());
 			responseDecoderUnitDTO.setCodec(decoder.getDecodedClass().getName());
-			responseDecoderUnitDTO.setMethods(pathConfigs.stream()
-					.map(ServerPathConfig::getMethod)
-					.collect(Collectors.toList()));
+			responseDecoderUnitDTO
+					.setMethods(pathConfigs.stream().map(ServerPathConfig::getMethod).collect(Collectors.toList()));
 			responseDecoderUnitDTO.setAttributes(attrList);
 			return ReflectUtils.createJson(responseDecoderUnitDTO);
 		}
 	}
 
 	@Override
-	public Object processGet(RoboReference<?> roboReference, Set<String> requestAttributes) throws InterruptedException, ExecutionException {
-
+	public Object createRoboUnitAttributesResponse(RoboReference<?> roboReference, Set<String> requestAttributes)
+			throws InterruptedException, ExecutionException {
 		List<PathAttributeDTO> attributes = new ArrayList<>();
 		for (AttributeDescriptor<?> attr : roboReference.getKnownAttributes()) {
 			if (requestAttributes.contains(attr.getAttributeName())) {
@@ -144,19 +133,13 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	@Override
 	public Object processPost(final RoboReference<?> unitReference, final String message) {
 		final SocketDecoder<Object, ?> decoder = codecRegistry.getDecoder(unitReference.getMessageType());
-		return decoder != null ? decoder.decode(message) : null;
+		return decoder == null ? null : decoder.decode(message);
 	}
 
-	//TODO: improve
-	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> unitRef,
-															final AttributeDescriptor<?> ad){
-		final Object val;
-		try {
-			val = unitRef.getAttribute(ad).get();
-		} catch (InterruptedException | ExecutionException e) {
-			SimpleLoggingUtil.error(getClass(), e.getMessage());
-			return null;
-		}
+	// TODO: improve
+	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> reference,
+			final AttributeDescriptor<?> ad) throws InterruptedException, ExecutionException {
+		final Object val = reference.getAttribute(ad).get();
 		final ResponseAttributeDTO attributeDTO = new ResponseAttributeDTO();
 		attributeDTO.setId(ad.getAttributeName());
 		attributeDTO.setType(ad.getAttributeType().getTypeName());

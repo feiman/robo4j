@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * DefaultRequestFactory responsible for creating specific types of responses
+ *
  * @author Marcus Hirt (@hirt)
  * @author Miro Wengner (@miragemiko)
  */
@@ -37,7 +39,7 @@ public interface DefaultRequestFactory<ResponseType> {
 	 *            robo context
 	 * @return all available units
 	 */
-	ResponseType processGet(RoboContext context);
+	ResponseType createRoboContextResponse(RoboContext context);
 
 	/**
 	 * Get detailed {@link RoboReference} description
@@ -48,15 +50,17 @@ public interface DefaultRequestFactory<ResponseType> {
 	 *            path to the robo unit reference
 	 * @return full robo unit description with all available information
 	 */
-	ResponseType processGet(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfig);
+	ResponseType createRoboUnitResponse(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfig) throws InterruptedException, ExecutionException;
 
 	/**
 	 * Get attributes of specific robo unit
 	 *
-	 * @param roboReference robo unit
+	 * @param roboReference
+	 *            robo unit
 	 * @return full robo unit description
 	 */
-	ResponseType processGet(RoboReference<?> roboReference, Set<String> requestAttributes) throws InterruptedException, ExecutionException;
+	ResponseType createRoboUnitAttributesResponse(RoboReference<?> roboReference, Set<String> requestAttributes)
+			throws InterruptedException, ExecutionException;
 
 	ResponseType processPost(RoboReference<?> unitReference, String message);
 }

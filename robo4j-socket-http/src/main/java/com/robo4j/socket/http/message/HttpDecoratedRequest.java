@@ -20,8 +20,10 @@ import com.robo4j.socket.http.HttpHeaderFieldNames;
 import com.robo4j.socket.http.units.PathHttpMethod;
 import com.robo4j.socket.http.util.RoboHttpUtils;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.robo4j.socket.http.HttpHeaders.HOST;
 import static com.robo4j.socket.http.util.HttpMessageUtils.COLON;
@@ -70,6 +72,10 @@ public final class HttpDecoratedRequest extends AbstractHttpDecoratedMessage {
 
 	public PathHttpMethod getPathMethod(){
 		return denominator.getPathHttpMethod();
+	}
+
+	public Set<String> getPathAttributes(){
+		return denominator == null ? Collections.emptySet() : denominator.getPathAttributes();
 	}
 
 	public String getHost() {

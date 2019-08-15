@@ -41,27 +41,27 @@ public class HttpResponseProcessBuilder {
 		return new HttpResponseProcessBuilder();
 	}
 
-	public HttpResponseProcessBuilder setPath(String path) {
+	HttpResponseProcessBuilder addPath(String path) {
 		this.path = path;
 		return this;
 	}
 
-	public HttpResponseProcessBuilder setTarget(RoboReference<?> roboReference) {
+	HttpResponseProcessBuilder addTarget(RoboReference<?> roboReference) {
 		this.target = roboReference != null ? roboReference.getId() : null;
 		return this;
 	}
 
-	public HttpResponseProcessBuilder setMethod(HttpMethod method) {
+	HttpResponseProcessBuilder addMethod(HttpMethod method) {
 		this.method = method;
 		return this;
 	}
 
-	public HttpResponseProcessBuilder setCode(StatusCode code) {
+	HttpResponseProcessBuilder addCode(StatusCode code) {
 		this.code = code;
 		return this;
 	}
 
-	public HttpResponseProcessBuilder setResult(Object result) {
+	HttpResponseProcessBuilder addResult(Object result) {
 		this.result = result;
 		return this;
 	}

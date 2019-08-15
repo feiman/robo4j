@@ -67,8 +67,7 @@ public class ReadSelectionKeyHandler implements SelectionKeyHandler {
 		try {
 			final HttpDecoratedRequest decoratedRequest = channelRequestBuffer
 					.getHttpDecoratedRequestByChannel(channel);
-			final CodecRegistry codecRegistry = serverContext.getPropertySafe(CodecRegistry.class,
-					PROPERTY_CODEC_REGISTRY);
+			final CodecRegistry codecRegistry = serverContext.getPropertySafe(CodecRegistry.class, PROPERTY_CODEC_REGISTRY);
 			final RoboRequestFactory factory = new RoboRequestFactory(codecRegistry);
 			final RoboRequestCallable callable = new RoboRequestCallable(context, serverContext, decoratedRequest,
 					factory);

@@ -30,6 +30,8 @@ import java.util.Set;
 import static com.robo4j.util.Utf8Constant.UTF8_SOLIDUS;
 
 /**
+ * HttpRequestDenominator represents information extracted from inbound request
+ *
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
