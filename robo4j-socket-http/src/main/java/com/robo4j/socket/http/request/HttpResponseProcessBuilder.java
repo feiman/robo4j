@@ -16,6 +16,7 @@
  */
 package com.robo4j.socket.http.request;
 
+import com.robo4j.RoboReference;
 import com.robo4j.socket.http.HttpMethod;
 import com.robo4j.socket.http.enums.StatusCode;
 
@@ -45,8 +46,8 @@ public class HttpResponseProcessBuilder {
 		return this;
 	}
 
-	public HttpResponseProcessBuilder setTarget(String target) {
-		this.target = target;
+	public HttpResponseProcessBuilder setTarget(RoboReference<?> roboReference) {
+		this.target = roboReference != null ? roboReference.getId() : null;
 		return this;
 	}
 

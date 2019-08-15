@@ -23,12 +23,19 @@ package com.robo4j.socket.http.dto;
  * @author Miroslav Wengner (@miragemiko)
  */
 public class ResponseAttributeDTO {
+
 	private String id;
 	private String type;
 	private String value;
 
 	public ResponseAttributeDTO() {
 
+	}
+
+	public ResponseAttributeDTO(String id, String type, String value) {
+		this.id = id;
+		this.type = type;
+		this.value = value;
 	}
 
 	public String getId() {

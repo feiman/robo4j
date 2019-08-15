@@ -21,6 +21,8 @@ import com.robo4j.RoboReference;
 import com.robo4j.socket.http.units.ServerPathConfig;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Marcus Hirt (@hirt)
@@ -28,11 +30,33 @@ import java.util.Collection;
  */
 public interface DefaultRequestFactory<ResponseType> {
 
+	/**
+	 * Get complete robo system description
+	 * 
+	 * @param context
+	 *            robo context
+	 * @return all available units
+	 */
 	ResponseType processGet(RoboContext context);
 
+	/**
+	 * Get detailed {@link RoboReference} description
+	 * 
+	 * @param roboReference
+	 *            robo unit reference
+	 * @param pathConfig
+	 *            path to the robo unit reference
+	 * @return full robo unit description with all available information
+	 */
 	ResponseType processGet(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfig);
 
-	ResponseType processServerGet(ServerPathConfig pathConfig);
+	/**
+	 * Get attributes of specific robo unit
+	 *
+	 * @param roboReference robo unit
+	 * @return full robo unit description
+	 */
+	ResponseType processGet(RoboReference<?> roboReference, Set<String> requestAttributes) throws InterruptedException, ExecutionException;
 
 	ResponseType processPost(RoboReference<?> unitReference, String message);
 }

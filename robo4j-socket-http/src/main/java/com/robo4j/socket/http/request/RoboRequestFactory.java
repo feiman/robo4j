@@ -20,6 +20,8 @@ import com.robo4j.AttributeDescriptor;
 import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
 import com.robo4j.logging.SimpleLoggingUtil;
+import com.robo4j.socket.http.dto.ClassGetSetDTO;
+import com.robo4j.socket.http.dto.PathAttributeDTO;
 import com.robo4j.socket.http.dto.ResponseAttributeDTO;
 import com.robo4j.socket.http.dto.ResponseDecoderUnitDTO;
 import com.robo4j.socket.http.dto.ResponseUnitDTO;
@@ -34,11 +36,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
- * Dynamically configurable request factory
+ * RoboRequestFactory intent to be responsible for Response body
  *
  * @author Marcus Hirt (@hirt)
  * @author Miro Wengner (@miragemiko)
@@ -73,7 +77,6 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		}
 	}
 
-	// FIXME correct available methods according to the configuration
 	@Override
 	public Object processGet(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfigs) {
 		final RoboReference<?> unitRef = roboReference;
@@ -106,9 +109,25 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	}
 
 	@Override
-	public Object processServerGet(ServerPathConfig pathConfig) {
-		final ResponseDecoderUnitDTO result = new ResponseDecoderUnitDTO();
-		return ReflectUtils.createJson(result);
+	public Object processGet(RoboReference<?> roboReference, Set<String> requestAttributes) throws InterruptedException, ExecutionException {
+
+		List<PathAttributeDTO> attributes = new ArrayList<>();
+		for (AttributeDescriptor<?> attr : roboReference.getKnownAttributes()) {
+			if (requestAttributes.contains(attr.getAttributeName())) {
+				PathAttributeDTO attribute = new PathAttributeDTO();
+				String valueString = String.valueOf(roboReference.getAttribute(attr).get());
+				attribute.setValue(valueString);
+				attribute.setName(attr.getAttributeName());
+				attributes.add(attribute);
+			}
+		}
+		if (attributes.size() == 1) {
+			Map<String, ClassGetSetDTO> responseAttributeDescriptorMap = ReflectUtils
+					.getFieldsTypeMap(PathAttributeDTO.class);
+			return JsonUtil.toJson(responseAttributeDescriptorMap, attributes.get(0));
+		} else {
+			return JsonUtil.toJsonArray(attributes);
+		}
 	}
 
 	/**
@@ -129,7 +148,8 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	}
 
 	//TODO: improve
-	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> unitRef, final AttributeDescriptor<?> ad){
+	private ResponseAttributeDTO createResponseAttributeDTO(final RoboReference<?> unitRef,
+															final AttributeDescriptor<?> ad){
 		final Object val;
 		try {
 			val = unitRef.getAttribute(ad).get();

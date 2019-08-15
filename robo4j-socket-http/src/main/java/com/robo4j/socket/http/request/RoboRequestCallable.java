@@ -16,25 +16,15 @@
  */
 package com.robo4j.socket.http.request;
 
-import com.robo4j.AttributeDescriptor;
 import com.robo4j.RoboContext;
-import com.robo4j.RoboReference;
 import com.robo4j.logging.SimpleLoggingUtil;
-import com.robo4j.socket.http.dto.ClassGetSetDTO;
-import com.robo4j.socket.http.dto.PathAttributeDTO;
 import com.robo4j.socket.http.enums.StatusCode;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
 import com.robo4j.socket.http.message.HttpRequestDenominator;
 import com.robo4j.socket.http.units.ServerContext;
 import com.robo4j.socket.http.units.ServerPathConfig;
-import com.robo4j.socket.http.util.HttpPathUtils;
-import com.robo4j.socket.http.util.JsonUtil;
-import com.robo4j.socket.http.util.ReflectUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -67,56 +57,32 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 
 		final HttpResponseProcessBuilder resultBuilder = HttpResponseProcessBuilder.Builder();
 
-		if(decoratedRequest == null){
-			return resultBuilder.setCode(StatusCode.BAD_REQUEST).build();
+		final ServerPathConfig requestPathConfig = decoratedRequest == null ? null :
+				serverContext.getPathConfig(decoratedRequest.getPathMethod());
 
-		}
+		if (isValidRequest(requestPathConfig)) {
+			resultBuilder.setMethod(requestPathConfig.getMethod());
+			resultBuilder.setPath(requestPathConfig.getPath());
 
-		final ServerPathConfig pathConfig = serverContext.getPathConfig(decoratedRequest.getPathMethod());
-
-		if (isValidPath(pathConfig)) {
-			resultBuilder.setMethod(pathConfig.getMethod());
-			resultBuilder.setPath(pathConfig.getPath());
-
-			switch (pathConfig.getMethod()) {
+			switch (requestPathConfig.getMethod()) {
 			case GET:
-				if (pathConfig.getPath().equals(UTF8_SOLIDUS)) {
+				if (requestPathConfig.getPath().equals(UTF8_SOLIDUS)) {
 					resultBuilder.setCode(StatusCode.OK);
 					resultBuilder.setResult(factory.processGet(context));
 				} else {
-
-					resultBuilder.setTarget(pathConfig.getRoboUnit().getId());
+					resultBuilder.setTarget(requestPathConfig.getRoboUnit());
 					final Object unitDescription;
 					// the system needs to have one more worker thread to evaluate Future get
 					final HttpRequestDenominator denominator = (HttpRequestDenominator) decoratedRequest
 							.getDenominator();
-					final Set<String> requestAttributes = denominator.getAttributes()
-							.get(HttpPathUtils.ATTRIBUTES_PATH_VALUE);
+					final Set<String> requestAttributes = denominator.getPathAttributes();
 
-
-					if (requestAttributes == null) {
-						Collection<ServerPathConfig> pathConfigs = serverContext.getPathConfigByPath(decoratedRequest.getPathMethod().getPath());
-						unitDescription = factory.processGet(pathConfig.getRoboUnit(), pathConfigs);
+					if (requestAttributes.isEmpty()) {
+						Collection<ServerPathConfig> pathConfigs = serverContext
+								.getPathConfigByPath(decoratedRequest.getPathMethod().getPath());
+						unitDescription = factory.processGet(requestPathConfig.getRoboUnit(), pathConfigs);
 					} else {
-						RoboReference<?> unit = pathConfig.getRoboUnit();
-
-						List<PathAttributeDTO> attributes = new ArrayList<>();
-						for (AttributeDescriptor<?> attr : unit.getKnownAttributes()) {
-							if (requestAttributes.contains(attr.getAttributeName())) {
-								PathAttributeDTO attribute = new PathAttributeDTO();
-								String valueString = String.valueOf(unit.getAttribute(attr).get());
-								attribute.setValue(valueString);
-								attribute.setName(attr.getAttributeName());
-								attributes.add(attribute);
-							}
-						}
-						if (attributes.size() == 1) {
-							Map<String, ClassGetSetDTO> responseAttributeDescriptorMap = ReflectUtils
-									.getFieldsTypeMap(PathAttributeDTO.class);
-							unitDescription = JsonUtil.toJson(responseAttributeDescriptorMap, attributes.get(0));
-						} else {
-							unitDescription = JsonUtil.toJsonArray(attributes);
-						}
+						unitDescription = factory.processGet(requestPathConfig.getRoboUnit(), requestAttributes);
 					}
 
 					resultBuilder.setCode(StatusCode.OK);
@@ -124,11 +90,12 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 				}
 				break;
 			case POST:
-				if (pathConfig.getPath().equals(UTF8_SOLIDUS)) {
+				if (requestPathConfig.getPath().equals(UTF8_SOLIDUS)) {
 					resultBuilder.setCode(StatusCode.BAD_REQUEST);
 				} else {
-					resultBuilder.setTarget(pathConfig.getRoboUnit().getId());
-					Object respObj = factory.processPost(pathConfig.getRoboUnit(), decoratedRequest.getMessage());
+					resultBuilder.setTarget(requestPathConfig.getRoboUnit());
+					Object respObj = factory.processPost(requestPathConfig.getRoboUnit(),
+							decoratedRequest.getMessage());
 					if (respObj == null) {
 						resultBuilder.setCode(StatusCode.BAD_REQUEST);
 					} else {
@@ -147,9 +114,8 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 		return resultBuilder.build();
 	}
 
-	private boolean isValidPath(ServerPathConfig pathConfig) {
-		return pathConfig != null && decoratedRequest.getPathMethod() != null
-				&& decoratedRequest.getPathMethod().getMethod().equals(pathConfig.getMethod());
+	private boolean isValidRequest(ServerPathConfig pathConfig) {
+		return pathConfig != null && decoratedRequest != null && decoratedRequest.getPathMethod() != null;
 	}
 
 }

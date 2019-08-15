@@ -63,7 +63,7 @@ import static org.mockito.Mockito.when;
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-class RoboRequestCallableTest {
+class RoboRequestCallableTests {
 
 	@Test
 	void notInitiatedServerContextGetDefaultRequestBadRequestResponseTest() throws Exception {
@@ -73,6 +73,56 @@ class RoboRequestCallableTest {
 		ServerContext serverContext = mock(ServerContext.class);
 
 		final Path path = getResourcePath("httpGetRequestDefaultPath.txt");
+
+		try (FileChannel fileChannel = FileChannel.open(path)) {
+			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
+			RoboRequestFactory factory = initRoboRequestFactory();
+
+			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
+			HttpResponseProcess process = callable.call();
+
+			assertEquals(expectedResponse, process);
+		}
+	}
+
+	@Test
+	void initiatedServerContextNullRequestBadResponseTest() throws Exception {
+
+		HttpResponseProcess expectedResponse = new HttpResponseProcess(null, null, null, StatusCode.BAD_REQUEST, null);
+
+		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
+		RoboReference<?> httpServerUnit = getMockedRoboReference("http_server", LifecycleState.STARTED);
+		RoboReference<?> sensorLightUnit = getMockedRoboReference("sensor_light", LifecycleState.SHUTDOWN);
+		RoboReference<?> sensorSoundUnit = getMockedRoboReference("sensor_sound", LifecycleState.STOPPED);
+		Collection<RoboReference<?>> units = Arrays.asList(httpServerUnit, sensorLightUnit, sensorSoundUnit);
+		when(roboContext.getUnits()).thenReturn(units);
+		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPathConfig(DEFAULT_GET_SERVER_METHOD)).thenReturn(DEFAULT_GET_SERVER_PATH_CONFIG);
+
+
+		RoboRequestFactory factory = initRoboRequestFactory();
+
+		RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, null, factory);
+		HttpResponseProcess process = callable.call();
+
+		assertEquals(expectedResponse, process);
+	}
+
+	@Test
+	void initiatedServerContextGetRequestNotRegisteredPathBadResponseTest() throws Exception {
+
+		HttpResponseProcess expectedResponse = new HttpResponseProcess(null, null, null, StatusCode.BAD_REQUEST, null);
+
+		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
+		RoboReference<?> httpServerUnit = getMockedRoboReference("http_server", LifecycleState.STARTED);
+		RoboReference<?> sensorLightUnit = getMockedRoboReference("sensor_light", LifecycleState.SHUTDOWN);
+		RoboReference<?> sensorSoundUnit = getMockedRoboReference("sensor_sound", LifecycleState.STOPPED);
+		Collection<RoboReference<?>> units = Arrays.asList(httpServerUnit, sensorLightUnit, sensorSoundUnit);
+		when(roboContext.getUnits()).thenReturn(units);
+		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPathConfig(DEFAULT_GET_SERVER_METHOD)).thenReturn(DEFAULT_GET_SERVER_PATH_CONFIG);
+
+		final Path path = getResourcePath("httpGetRequestPathSensorSetupUnitWithAttributes.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
@@ -293,7 +343,9 @@ class RoboRequestCallableTest {
 		String pathConfig = "/units/" + observedRoboUnitName ;
 
 		HttpResponseProcess expectedResponse = new HttpResponseProcess(pathConfig, observedRoboUnitName, HttpMethod.GET,
-				StatusCode.OK,"[]");
+				StatusCode.OK,"{\"id\":\"sensorSetupUnit\",\"codec\":\"com.robo4j.socket.http.codec.SimpleCommand\"" +
+				",\"methods\":[\"GET\",\"POST\",\"PUT\"],\"attributes\":" +
+				"[{\"id\":\"configured\",\"type\":\"java.lang.Boolean\",\"value\":\"true\"}]}");
 
 		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
 

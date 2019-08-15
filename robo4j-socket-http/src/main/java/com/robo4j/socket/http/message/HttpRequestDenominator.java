@@ -19,6 +19,7 @@ package com.robo4j.socket.http.message;
 import com.robo4j.socket.http.HttpMethod;
 import com.robo4j.socket.http.HttpVersion;
 import com.robo4j.socket.http.units.PathHttpMethod;
+import com.robo4j.socket.http.util.HttpPathUtils;
 import com.robo4j.util.Utf8Constant;
 
 import java.util.Collections;
@@ -37,7 +38,7 @@ public class HttpRequestDenominator implements HttpDenominator {
 	private final StringBuilder sb = new StringBuilder();
 	private final PathHttpMethod pathHttpMethod;
 	private final HttpVersion version;
-	private final Map<String, Set<String>> attributes;
+	private final Map<String, Set<String>> propertiesMap;
 
 	/**
 	 * default request with default path
@@ -50,7 +51,7 @@ public class HttpRequestDenominator implements HttpDenominator {
 	public HttpRequestDenominator(HttpMethod method, HttpVersion version) {
 		this.pathHttpMethod = new PathHttpMethod(UTF8_SOLIDUS, method);
 		this.version = version;
-		this.attributes = Collections.emptyMap();
+		this.propertiesMap = Collections.emptyMap();
 	}
 
 	/**
@@ -65,7 +66,7 @@ public class HttpRequestDenominator implements HttpDenominator {
 	public HttpRequestDenominator(HttpMethod method, String path, HttpVersion version) {
 		this.pathHttpMethod = new PathHttpMethod(path, method);
 		this.version = version;
-		this.attributes = Collections.emptyMap();
+		this.propertiesMap = Collections.emptyMap();
 	}
 
 	/**
@@ -76,23 +77,27 @@ public class HttpRequestDenominator implements HttpDenominator {
 	 *            server path
 	 * @param version
 	 *            http version
-	 * @param attributes
+	 * @param propertiesMap
 	 *            request attributes
 	 */
 	public HttpRequestDenominator(HttpMethod method, String path, HttpVersion version,
-			Map<String, Set<String>> attributes) {
+			Map<String, Set<String>> propertiesMap) {
 		this.pathHttpMethod = new PathHttpMethod(path, method);
 		;
 		this.version = version;
-		this.attributes = attributes;
+		this.propertiesMap = propertiesMap;
 	}
 
 	public PathHttpMethod getPathHttpMethod() {
 		return pathHttpMethod;
 	}
 
-	public Map<String, Set<String>> getAttributes() {
-		return attributes;
+	public Map<String, Set<String>> getPropertiesMap() {
+		return propertiesMap;
+	}
+
+	public Set<String> getPathAttributes() {
+		return propertiesMap.getOrDefault(HttpPathUtils.ATTRIBUTES_PATH_VALUE, Collections.emptySet());
 	}
 
 	@Override
@@ -124,16 +129,17 @@ public class HttpRequestDenominator implements HttpDenominator {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
 		HttpRequestDenominator that = (HttpRequestDenominator) o;
-		return Objects.equals(pathHttpMethod, that.pathHttpMethod) &&
-				version == that.version &&
-				Objects.equals(attributes, that.attributes);
+		return Objects.equals(pathHttpMethod, that.pathHttpMethod) && version == that.version
+				&& Objects.equals(propertiesMap, that.propertiesMap);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(pathHttpMethod, version, attributes);
+		return Objects.hash(pathHttpMethod, version, propertiesMap);
 	}
 }
