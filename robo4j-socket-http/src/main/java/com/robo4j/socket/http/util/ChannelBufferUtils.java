@@ -206,13 +206,12 @@ public final class ChannelBufferUtils {
 		}
 		HttpDecoratedRequest result = new HttpDecoratedRequest(headerParams, denominator);
 
-		if (headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)) {
-			result.setLength(calculateMessageSize(helper.headerAndBody[POSITION_HEADER].length(), headerParams));
-			if (helper.headerAndBody.length > 1) {
-				result.addMessage(helper.headerAndBody[POSITION_BODY]);
+		if(helper.headerAndBody.length > 1){
+			result.addMessage(helper.headerAndBody[POSITION_BODY]);
+			if(headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)){
+				result.setLength(calculateMessageSize(helper.headerAndBody[POSITION_HEADER].length(), headerParams));
 			}
 		}
-
 		return result;
 	}
 
