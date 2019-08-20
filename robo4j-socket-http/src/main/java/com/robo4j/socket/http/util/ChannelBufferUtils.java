@@ -36,8 +36,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.robo4j.socket.http.util.HttpConstant.HTTP_NEW_LINE;
-import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER;
 import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER_CURR;
+import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER_SIZE;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_BODY;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_HEADER;
 
@@ -282,10 +282,9 @@ public final class ChannelBufferUtils {
 		return result;
 	}
 
-	// TODO : fix it, include delimiter properly
+	// TODO : fix it, include delimiter properly, confirm the bytes size
 	private static Integer calculateMessageSize(int headerValue, Map<String, String> headerParams) {
-		return headerValue + HTTP_HEADER_BODY_DELIMITER.length()
-				+ Integer.valueOf(headerParams.get(HttpHeaderFieldNames.CONTENT_LENGTH));
+		return headerValue +  HTTP_HEADER_BODY_DELIMITER_SIZE + Integer.valueOf(headerParams.get(HttpHeaderFieldNames.CONTENT_LENGTH));
 	}
 
 	/**

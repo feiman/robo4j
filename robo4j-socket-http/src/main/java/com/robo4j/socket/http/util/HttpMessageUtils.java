@@ -30,6 +30,7 @@ public final class HttpMessageUtils {
 	public static final String SPACE = "\u0020";
 	@Deprecated
 	public static final String HTTP_HEADER_BODY_DELIMITER = HTTP_NEW_LINE.concat(HTTP_NEW_LINE);
+	public static final int HTTP_HEADER_BODY_DELIMITER_SIZE = 4;
 	public static final String HTTP_HEADER_BODY_DELIMITER_CURR = HTTP_NEW_LINE_CURR.concat(HTTP_NEW_LINE_CURR);
 	public static final String COLON = ":";
 	public static final int HTTP_DEFAULT_PORT = 80;

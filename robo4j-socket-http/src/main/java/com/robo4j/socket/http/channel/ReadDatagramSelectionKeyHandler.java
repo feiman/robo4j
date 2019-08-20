@@ -35,7 +35,7 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.util.Map;
 
-import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER;
+import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER_CURR;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_BYTE_BUFFER;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_CODEC_REGISTRY;
 
@@ -68,7 +68,7 @@ public class ReadDatagramSelectionKeyHandler implements SelectionKeyHandler {
 			buffer.flip();
 			String message = ChannelBufferUtils.byteBufferToString(buffer);
 
-            final String[] headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER);
+            final String[] headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER_CURR);
             final String firstLine = RoboHttpUtils.correctLine(headerAndBody[0]);
             final String[] tokens = firstLine.split(HttpConstant.HTTP_EMPTY_SEP);
             final String body = headerAndBody[1];
