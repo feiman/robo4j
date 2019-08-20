@@ -109,7 +109,7 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 			}
 			break;
 		default:
-			resultBuilder.addCode(StatusCode.BAD_REQUEST);
+			resultBuilder.addCode(StatusCode.NOT_IMPLEMENTED);
 			SimpleLoggingUtil.debug(getClass(), "not implemented method: " + decoratedRequest.getPathMethod());
 		}
 	}

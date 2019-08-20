@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 
 import static com.robo4j.socket.http.util.HttpConstant.HTTP_NEW_LINE;
 import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER;
+import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER_CURR;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_BODY;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_HEADER;
 
@@ -57,7 +58,7 @@ public final class ChannelBufferUtils {
 	 */
 	private static MessageDecorationHelper extractMessageDecoratorValues(String message) {
 		final MessageDecorationHelper helper = new MessageDecorationHelper();
-		helper.headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER);
+		helper.headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER_CURR);
 		helper.header = helper.headerAndBody[POSITION_HEADER].split("[" + HTTP_NEW_LINE + "]+");
 		helper.firstLine = RoboHttpUtils.correctLine(helper.header[0]);
 		helper.tokens = helper.firstLine.split(HttpConstant.HTTP_EMPTY_SEP);
@@ -206,9 +207,9 @@ public final class ChannelBufferUtils {
 		}
 		HttpDecoratedRequest result = new HttpDecoratedRequest(headerParams, denominator);
 
-		if(helper.headerAndBody.length > 1){
+		if (helper.headerAndBody.length > 1) {
 			result.addMessage(helper.headerAndBody[POSITION_BODY]);
-			if(headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)){
+			if (headerParams.containsKey(HttpHeaderFieldNames.CONTENT_LENGTH)) {
 				result.setLength(calculateMessageSize(helper.headerAndBody[POSITION_HEADER].length(), headerParams));
 			}
 		}
@@ -281,6 +282,7 @@ public final class ChannelBufferUtils {
 		return result;
 	}
 
+	// TODO : fix it, include delimiter properly
 	private static Integer calculateMessageSize(int headerValue, Map<String, String> headerParams) {
 		return headerValue + HTTP_HEADER_BODY_DELIMITER.length()
 				+ Integer.valueOf(headerParams.get(HttpHeaderFieldNames.CONTENT_LENGTH));

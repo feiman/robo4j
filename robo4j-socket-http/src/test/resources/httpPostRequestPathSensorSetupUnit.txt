@@ -1,0 +1,12 @@
+POST /units/sensorSetupUnit HTTP/1.1
+Content-Type: text/plain
+User-Agent: PostmanRuntime/7.15.2
+Accept: */*
+Cache-Control: no-cache
+Postman-Token: 7975890a-d871-42a9-8825-5c82b53351b5
+Host: localhost:8061
+Accept-Encoding: gzip, deflate
+Content-Length: 48
+Connection: keep-alive
+
+{"value":"value1","type":"type1"}

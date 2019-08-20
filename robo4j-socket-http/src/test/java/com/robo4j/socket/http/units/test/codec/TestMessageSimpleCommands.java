@@ -20,6 +20,7 @@ package com.robo4j.socket.http.units.test.codec;
 import com.robo4j.socket.http.codec.SimpleCommand;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +32,7 @@ import java.util.List;
 public class TestMessageSimpleCommands implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private List<SimpleCommand> commands;
+    private List<SimpleCommand> commands = new ArrayList<>();
 
     public TestMessageSimpleCommands() {
     }

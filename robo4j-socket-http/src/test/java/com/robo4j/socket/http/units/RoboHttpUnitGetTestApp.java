@@ -34,12 +34,13 @@ import com.robo4j.util.SystemUtil;
 
 import static com.robo4j.socket.http.units.RoboHttpPingPongTest.HOST_SYSTEM;
 import static com.robo4j.socket.http.units.RoboHttpPingPongTest.PACKAGE_CODECS;
+import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_CODEC_PACKAGES;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_HOST;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_SOCKET_PORT;
 import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_UNIT_PATHS_CONFIG;
 
 /**
- * RoboHttpUnitGetTestApp should test Http get requests
+ * RoboHttpUnitGetTestApp is a simple stand-alone app to test GET request
  *
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
@@ -76,7 +77,7 @@ public class RoboHttpUnitGetTestApp {
 		//@formatter:off
 		Configuration configServer = new ConfigurationBuilder()
 				.addInteger(PROPERTY_SOCKET_PORT, SERVER_PORT)
-				.addString("packages", "com.robo4j.socket.http.codec")
+				.addString(PROPERTY_CODEC_PACKAGES, "com.robo4j.socket.http.codec")
 				.addString(PROPERTY_UNIT_PATHS_CONFIG, pathBuilder.build())
 				.build();
 		//@formatter:on
@@ -114,7 +115,7 @@ public class RoboHttpUnitGetTestApp {
 		//@formatter:off
 		Configuration config = new ConfigurationBuilder()
 				.addInteger(PROPERTY_SOCKET_PORT, SERVER_PORT)
-				.addString("packages", PACKAGE_CODECS)
+				.addString(PROPERTY_CODEC_PACKAGES, PACKAGE_CODECS)
 				.addString(PROPERTY_UNIT_PATHS_CONFIG, pathBuilder.build())
 				.build();
 		//@formatter:on

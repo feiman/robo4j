@@ -27,6 +27,8 @@ import com.robo4j.socket.http.units.test.codec.TestMessageSimpleCommands;
  */
 public class MessageSimpleCommandsUnit extends RoboUnit<TestMessageSimpleCommands> {
 
+    public static final String NAME = "messageSimpleCommandsUnit";
+
     public MessageSimpleCommandsUnit(RoboContext context, String id) {
         super(TestMessageSimpleCommands.class, context, id);
     }

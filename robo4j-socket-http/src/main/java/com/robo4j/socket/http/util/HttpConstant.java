@@ -26,5 +26,6 @@ public final class HttpConstant {
 	public static final int DEFAULT_VALUE_0 = 0;
 	public static final String HTTP_QUERY_SEP = "\u0026"; // AMPERSAND &
 	public static final String HTTP_EMPTY_SEP = "\\s+";
+	public static final String HTTP_NEW_LINE_CURR = "\\r?\\n";
 	public static final String HTTP_NEW_LINE = "\r\n";
 }
