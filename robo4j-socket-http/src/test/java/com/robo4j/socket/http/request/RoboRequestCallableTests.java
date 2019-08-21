@@ -40,6 +40,7 @@ import com.robo4j.socket.http.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -391,7 +392,8 @@ class RoboRequestCallableTests {
 	/**
 	 * Testing HTTP POST request to the specific unit
 	 *
-	 * @throws Exception exception
+	 * @throws Exception
+	 *             exception
 	 */
 	@SuppressWarnings("unchecked")
 	@Test
@@ -400,9 +402,8 @@ class RoboRequestCallableTests {
 		final String observedRoboUnitName = "sensorSetupUnit";
 		final String pathConfig = "/units/" + observedRoboUnitName;
 
-		HttpResponseProcess expectedResponse = new HttpResponseProcess(pathConfig, observedRoboUnitName, HttpMethod.POST,
-				StatusCode.ACCEPTED,
-				new SimpleCommand("value1", "type1"));
+		HttpResponseProcess expectedResponse = new HttpResponseProcess(pathConfig, observedRoboUnitName,
+				HttpMethod.POST, StatusCode.ACCEPTED, new SimpleCommand("value1", "type1"));
 
 		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
 		RoboReference<?> sensorSetupUnitMock = getMockedRoboReference(observedRoboUnitName, LifecycleState.STARTED);
@@ -434,10 +435,8 @@ class RoboRequestCallableTests {
 			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
 			HttpResponseProcess process = callable.call();
 
-			System.out.println("PROCESS:" + process);
 			assertEquals(expectedResponse, process);
 		}
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -470,7 +469,7 @@ class RoboRequestCallableTests {
 		return roboContext;
 	}
 
-	private HttpDecoratedRequest getDecoratedRequestByFileChannel(FileChannel fileChannel) throws IOException {
+	private HttpDecoratedRequest getDecoratedRequestByFileChannel(ByteChannel fileChannel) throws IOException {
 		ChannelRequestBuffer channelRequestBuffer = new ChannelRequestBuffer();
 		return channelRequestBuffer.getHttpDecoratedRequestByChannel(fileChannel);
 	}

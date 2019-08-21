@@ -9,4 +9,4 @@ Accept-Encoding: gzip, deflate
 Content-Length: 48
 Connection: keep-alive
 
-{"value":"value1","type":"type1"}
+{"type":"type1","value":"value1"}

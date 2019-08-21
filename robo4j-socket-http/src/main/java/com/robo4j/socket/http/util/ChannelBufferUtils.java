@@ -36,7 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.robo4j.socket.http.util.HttpConstant.HTTP_NEW_LINE;
-import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER_CURR;
+import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER;
 import static com.robo4j.socket.http.util.HttpMessageUtils.HTTP_HEADER_BODY_DELIMITER_SIZE;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_BODY;
 import static com.robo4j.socket.http.util.HttpMessageUtils.POSITION_HEADER;
@@ -58,7 +58,7 @@ public final class ChannelBufferUtils {
 	 */
 	private static MessageDecorationHelper extractMessageDecoratorValues(String message) {
 		final MessageDecorationHelper helper = new MessageDecorationHelper();
-		helper.headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER_CURR);
+		helper.headerAndBody = message.split(HTTP_HEADER_BODY_DELIMITER);
 		helper.header = helper.headerAndBody[POSITION_HEADER].split("[" + HTTP_NEW_LINE + "]+");
 		helper.firstLine = RoboHttpUtils.correctLine(helper.header[0]);
 		helper.tokens = helper.firstLine.split(HttpConstant.HTTP_EMPTY_SEP);
