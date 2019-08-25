@@ -26,13 +26,13 @@ public class ResponseAttributeDTO {
 
 	private String id;
 	private String type;
-	private String value;
+	private Object value;
 
 	public ResponseAttributeDTO() {
 
 	}
 
-	public ResponseAttributeDTO(String id, String type, String value) {
+	public ResponseAttributeDTO(String id, String type, Object value) {
 		this.id = id;
 		this.type = type;
 		this.value = value;
@@ -54,11 +54,11 @@ public class ResponseAttributeDTO {
 		this.type = type;
 	}
 
-	public String getValue() {
+	public Object getValue() {
 		return value;
 	}
 
-	public void setValue(String value) {
+	public void setValue(Object value) {
 		this.value = value;
 	}
 

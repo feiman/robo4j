@@ -356,7 +356,9 @@ public final class ReflectUtils {
 					Method getMethod = clazz.getDeclaredMethod(getMethodName);
 					Method setMethod = clazz.getDeclaredMethod(setMethodName, field.getType());
 
-					if (field.getType().isAssignableFrom(Map.class) ) {
+					if(field.getType().equals(Object.class)){
+						return new ClassGetSetDTO(field.getName(), field.getType(), getMethod, setMethod);
+					} else if (field.getType().isAssignableFrom(Map.class) ) {
 						Class<?> mapValueClazz = ReflectUtils
 								.extractMapValueClassSignature(field.getGenericType().getTypeName());
 						return new ClassGetSetDTO(field.getName(), mapValueClazz, TypeCollection.MAP, getMethod, setMethod);
@@ -411,41 +413,47 @@ public final class ReflectUtils {
 	private static String processCollectionToJson(ClassGetSetDTO getterDTO, TypeMapper typeMapper, Object obj) {
 		JsonElementStringBuilder result = JsonElementStringBuilder.Builder();
 		JsonTypeAdapter jsonTypeAdapter = getAdapterByClazz(getterDTO.getValueClass(), typeMapper);
-		switch (getterDTO.getCollection()) {
-			case ARRAY:
-				Object[] arrayObjects = (Object[]) obj;
 
-				String arrayValue = Stream.of(arrayObjects)
-						.map(element -> jsonTypeAdapter.adapt(element)).collect(Collectors.joining(UTF8_COMMA));
-				//formatter:off
-				result.add(UTF8_SQUARE_BRACKET_LEFT)
-						.add(arrayValue)
-						.add(UTF8_SQUARE_BRACKET_RIGHT);
-				//formatter:off
+		if(getterDTO.getCollection() == null){
+			result.add(obj);
+		} else {
+			switch (getterDTO.getCollection()) {
+				case ARRAY:
+					Object[] arrayObjects = (Object[]) obj;
 
-				break;
-			case LIST:
-				List<Object> objects = (List<Object>) obj;
-				String listValue = objects.stream().map(element -> jsonTypeAdapter.adapt(element)).collect(Collectors.joining(UTF8_COMMA));
-				//formatter:off
-				result.add(UTF8_SQUARE_BRACKET_LEFT)
-						.add(listValue)
-						.add(UTF8_SQUARE_BRACKET_RIGHT);
-				//formatter:on
-				break;
-			case MAP:
-				Map<Object, Object> objectMap = (Map<Object, Object>) obj;
-				result.add(UTF8_CURLY_BRACKET_LEFT)
-						.add(objectMap.entrySet().stream()
-								.map(entry ->
-									JsonElementStringBuilder.Builder()
-											.addQuotationWithDelimiter(UTF8_COLON, entry.getKey())
-											.add(jsonTypeAdapter.adapt(entry.getValue()))
-											.build())
-								.collect(Collectors.joining(UTF8_COMMA)))
-						.add(UTF8_CURLY_BRACKET_RIGHT);
-				break;
+					String arrayValue = Stream.of(arrayObjects)
+							.map(element -> jsonTypeAdapter.adapt(element)).collect(Collectors.joining(UTF8_COMMA));
+					//formatter:off
+					result.add(UTF8_SQUARE_BRACKET_LEFT)
+							.add(arrayValue)
+							.add(UTF8_SQUARE_BRACKET_RIGHT);
+					//formatter:off
+
+					break;
+				case LIST:
+					List<Object> objects = (List<Object>) obj;
+					String listValue = objects.stream().map(element -> jsonTypeAdapter.adapt(element)).collect(Collectors.joining(UTF8_COMMA));
+					//formatter:off
+					result.add(UTF8_SQUARE_BRACKET_LEFT)
+							.add(listValue)
+							.add(UTF8_SQUARE_BRACKET_RIGHT);
+					//formatter:on
+					break;
+				case MAP:
+					Map<Object, Object> objectMap = (Map<Object, Object>) obj;
+					result.add(UTF8_CURLY_BRACKET_LEFT)
+							.add(objectMap.entrySet().stream()
+									.map(entry ->
+											JsonElementStringBuilder.Builder()
+													.addQuotationWithDelimiter(UTF8_COLON, entry.getKey())
+													.add(jsonTypeAdapter.adapt(entry.getValue()))
+													.build())
+									.collect(Collectors.joining(UTF8_COMMA)))
+							.add(UTF8_CURLY_BRACKET_RIGHT);
+					break;
+			}
 		}
+
 		return result.build();
 	}
 

@@ -144,7 +144,7 @@ class RoboRequestCallableTests {
 		map.put("sensor_light", LifecycleState.SHUTDOWN);
 		map.put("sensor_sound", LifecycleState.STOPPED);
 
-		String expectedResultResponse = createResponseUnitDTOs(map);
+		Object expectedResultResponse = createResponseUnitDTOs(map);
 
 		HttpResponseProcess expectedResponse = new HttpResponseProcess("/", null, HttpMethod.GET, StatusCode.OK,
 				expectedResultResponse);
@@ -181,7 +181,7 @@ class RoboRequestCallableTests {
 		HttpResponseProcess expectedResponse = new HttpResponseProcess(pathConfig, observedRoboUnitName, HttpMethod.GET,
 				StatusCode.OK, "[" +
 				"{\"id\":\"address\",\"type\":\"java.lang.String\",\"value\":\"127.0.0.1\"}," +
-				"{\"id\":\"serverPort\",\"type\":\"java.lang.Integer\",\"value\":\"8061\"}," +
+				"{\"id\":\"serverPort\",\"type\":\"java.lang.Integer\",\"value\":8061}," +
 				"{\"id\":\"paths\",\"type\":\"java.util.ArrayList\",\"value\":" +
 					"[{\"roboUnit\":\"http_server\",\"method\":\"GET\",\"callbacks\":{\"\":{}}}]" +
 				"}]");
@@ -240,7 +240,7 @@ class RoboRequestCallableTests {
 				StatusCode.OK,
 				"{\"id\":\"sensorSetupUnit\",\"codec\":\"com.robo4j.socket.http.codec.SimpleCommand\","
 						+ "\"methods\":[\"GET\",\"POST\",\"PUT\"],\"attributes\":[{\"id\":\"configured\","
-						+ "\"type\":\"java.lang.Boolean\",\"value\":\"true\"}]}");
+						+ "\"type\":\"java.lang.Boolean\",\"value\":true}]}");
 
 		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
 
@@ -346,7 +346,7 @@ class RoboRequestCallableTests {
 				StatusCode.OK,
 				"{\"id\":\"sensorSetupUnit\",\"codec\":\"com.robo4j.socket.http.codec.SimpleCommand\""
 						+ ",\"methods\":[\"GET\",\"POST\",\"PUT\"],\"attributes\":"
-						+ "[{\"id\":\"configured\",\"type\":\"java.lang.Boolean\",\"value\":\"true\"}]}");
+						+ "[{\"id\":\"configured\",\"type\":\"java.lang.Boolean\",\"value\":true}]}");
 
 		RoboContext roboContext = getMockedRoboContext("roboSystem1", LifecycleState.STARTED);
 
@@ -447,7 +447,7 @@ class RoboRequestCallableTests {
 		when(mockedFutureAddress.get()).thenReturn(value);
 	}
 
-	private String createResponseUnitDTOs(Map<String, LifecycleState> unitsMap) {
+	private Object createResponseUnitDTOs(Map<String, LifecycleState> unitsMap) {
 		List<ResponseUnitDTO> list = new LinkedList<>();
 		for (Map.Entry<String, LifecycleState> entry : unitsMap.entrySet()) {
 			list.add(new ResponseUnitDTO(entry.getKey(), entry.getValue()));

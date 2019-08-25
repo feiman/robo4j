@@ -143,7 +143,11 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		final ResponseAttributeDTO attributeDTO = new ResponseAttributeDTO();
 		attributeDTO.setId(ad.getAttributeName());
 		attributeDTO.setType(ad.getAttributeType().getTypeName());
-		attributeDTO.setValue(String.valueOf(val));
+		if(val instanceof String && !ad.getAttributeName().equals("paths")){
+			attributeDTO.setValue("\""+val+"\"");
+		} else {
+			attributeDTO.setValue(val);
+		}
 		return attributeDTO;
 	}
 

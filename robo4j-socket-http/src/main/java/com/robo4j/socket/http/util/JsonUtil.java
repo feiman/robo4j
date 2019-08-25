@@ -191,20 +191,27 @@ public final class JsonUtil {
 	 *            desired type
 	 * @return json array
 	 */
-	public static <T> String toJsonArray(List<T> list) {
+	public static <T> Object toJsonArray(List<T> list) {
 		return JsonElementStringBuilder.Builder().add(Utf8Constant.UTF8_SQUARE_BRACKET_LEFT)
 				.add(list.stream().map(ReflectUtils::createJson).collect(Collectors.joining(Utf8Constant.UTF8_COMMA)))
 				.add(Utf8Constant.UTF8_SQUARE_BRACKET_RIGHT).build();
 	}
 
-	public static <T> String toJsonArrayServer(List<T> list) {
+	/**
+	 *
+	 * @param list list of attributes
+	 * @param <T> type
+	 * @return response String
+	 */
+	public static <T> Object toJsonArrayServer(List<T> list) {
 		return JsonElementStringBuilder.Builder().add(Utf8Constant.UTF8_SQUARE_BRACKET_LEFT)
 				.add(list.stream().map(e -> {
 					if(e instanceof ResponseAttributeDTO){
 						ResponseAttributeDTO ra = (ResponseAttributeDTO)e;
 						switch (ra.getType()){
 							case "java.util.ArrayList":
-								List<HttpPathMethodDTO> tmpList = JsonUtil.readPathConfig(HttpPathMethodDTO.class, ra.getValue());
+								List<HttpPathMethodDTO> tmpList =
+										JsonUtil.readPathConfig(HttpPathMethodDTO.class, ra.getValue().toString());
 								ResponseAttributeListDTO tmpAttr = new ResponseAttributeListDTO();
 								tmpAttr.setId(ra.getId());
 								tmpAttr.setType(ra.getType());
