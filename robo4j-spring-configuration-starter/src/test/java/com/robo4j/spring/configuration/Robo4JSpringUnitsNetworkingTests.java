@@ -107,7 +107,7 @@ class Robo4JSpringUnitsNetworkingTests {
 
 		final CountDownLatch consumerLatch = roboContext.getReference(StringConsumer.NAME)
 				.getAttribute(StringConsumer.DESCRIPTOR_COUNT_DOWN_LATCH).get();
-		consumerLatch.await(20, TimeUnit.SECONDS);
+		consumerLatch.await(60, TimeUnit.SECONDS);
 
 		final List<String> producedMessageList = (List<String>) remoteSystem.getReference(MessageProducer.NAME)
 				.getAttribute(MessageProducer.DESCRIPTOR_MESSAGE_LIST).get();
