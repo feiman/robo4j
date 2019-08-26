@@ -91,7 +91,14 @@ public class MessageClient {
 					SimpleLoggingUtil.error(getClass(), e.getMessage());
 				} catch (Exception e) {
 					SimpleLoggingUtil.debug(MessageClient.class, "Message delivery failed for recipient", e);
+				} finally {
+					try {
+						ois.close();
+					} catch (IOException e) {
+						SimpleLoggingUtil.debug(MessageClient.class, "MessageClient failed to close", e);
+					}
 				}
+
 			}
 		}
 
