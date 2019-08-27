@@ -187,8 +187,8 @@ public class MessageServer {
 			running = true;
 			while (running) {
 				if(!activeListeners.contains(serverListener)){
-					activeListeners.add(serverListener);
 					MessageHandler handler = new MessageHandler(serverSocket.accept());
+					activeListeners.add(serverListener);
 					Thread t = new Thread(g, handler, "Communication [" + handler.socket.getRemoteSocketAddress() + "]");
 					t.setDaemon(true);
 					t.start();

@@ -145,11 +145,18 @@ class LookupServiceImpl implements LookupService {
 		return Collections.unmodifiableMap(map);
 	}
 
+	private final Map<String, RoboContext> remoteClientContexts = new ConcurrentHashMap<>();
 	@Override
 	public RoboContext getContext(String id) {
 		RoboContextDescriptorEntry entry = entries.get(id);
 		if (entry != null) {
-			return new ClientRemoteRoboContext(entry);
+			if(remoteClientContexts.containsKey(id)){
+				return remoteClientContexts.get(id);
+			} else {
+				ClientRemoteRoboContext clientRemoteRoboContext = new ClientRemoteRoboContext(entry);
+				remoteClientContexts.put(id, clientRemoteRoboContext);
+				return clientRemoteRoboContext;
+			}
 		} else {
 			LocalRoboContextDescriptor localEntry = localContexts.getLocalDescriptor(id);
 			return localEntry != null ? localEntry.getContext() : null;

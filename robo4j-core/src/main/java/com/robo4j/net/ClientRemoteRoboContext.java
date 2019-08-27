@@ -29,6 +29,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 /**
@@ -37,14 +38,12 @@ import java.util.concurrent.Future;
  * @author Miroslav Wengner (@miragemiko)
  */
 public class ClientRemoteRoboContext implements RoboContext {
-	private final RoboContextDescriptorEntry descriptorEntry;
-	private final MessageClient client;
 
 	private class ClientRemoteRoboReference<T> implements RoboReference<T> {
 
 		private final String id;
 
-		public ClientRemoteRoboReference(String id) {
+		ClientRemoteRoboReference(String id) {
 			this.id = id;
 		}
 
@@ -98,12 +97,16 @@ public class ClientRemoteRoboContext implements RoboContext {
 
 	}
 
+	private final RoboContextDescriptorEntry descriptorEntry;
+	private final MessageClient client;
+	private final Map<String, RoboReference> remoteClientReferences = new ConcurrentHashMap<>();
+
 	public ClientRemoteRoboContext(RoboContextDescriptorEntry descriptorEntry) {
 		this.descriptorEntry = descriptorEntry;
 		client = initializeClient(descriptorEntry);
 	}
 
-	private static MessageClient initializeClient(RoboContextDescriptorEntry descriptorEntry) {
+	private MessageClient initializeClient(RoboContextDescriptorEntry descriptorEntry) {
 		MessageClient client = new MessageClient(URI.create(descriptorEntry.descriptor.getMetadata().get(RoboContextDescriptor.KEY_URI)),
 				descriptorEntry.descriptor.getId(), ConfigurationFactory.createEmptyConfiguration());
 		return client;
@@ -128,7 +131,13 @@ public class ClientRemoteRoboContext implements RoboContext {
 
 	@Override
 	public <T> RoboReference<T> getReference(String id) {
-		return new ClientRemoteRoboReference<>(id);
+		if(remoteClientReferences.containsKey(id)){
+			return remoteClientReferences.get(id);
+		} else {
+			RoboReference<T> roboReference = new ClientRemoteRoboReference<>(id);
+			remoteClientReferences.put(id, roboReference);
+			return roboReference;
+		}
 	}
 
 	@Override

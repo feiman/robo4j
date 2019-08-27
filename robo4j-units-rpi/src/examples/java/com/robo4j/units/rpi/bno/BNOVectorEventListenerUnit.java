@@ -26,6 +26,10 @@ import com.robo4j.hw.rpi.imu.bno.VectorEvent;
 import com.robo4j.logging.SimpleLoggingUtil;
 import com.robo4j.net.LookupServiceProvider;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * BNOVectorEventListenerUnit listen to VectorEvent events produced by {@link BNO080EmitterUnit}
  *
@@ -36,11 +40,13 @@ public class BNOVectorEventListenerUnit extends RoboUnit<VectorEvent> {
 	
 	public static final String ATTR_TARGET_CONTEXT = "targetContext";
 	public static final String ATTR_REMOTE_UNIT = "remoteUnit";
+	private final BlockingQueue<VectorEvent> eventQueue = new LinkedBlockingQueue<>();
 
 	public BNOVectorEventListenerUnit(RoboContext context, String id) {
 		super(VectorEvent.class, context, id);
 	}
 
+	private final AtomicBoolean active = new AtomicBoolean(true);
 	private String targetContext;
 	private String remoteUnit;
 
@@ -51,16 +57,37 @@ public class BNOVectorEventListenerUnit extends RoboUnit<VectorEvent> {
 	}
 
 	@Override
+	public void start() {
+		getContext().getScheduler().execute(() -> {
+			while(active.get()){
+				try {
+					VectorEvent message = eventQueue.take();
+					System.out.println("EMITTED MESSAGE:" + message);
+					RoboContext remoteContext = LookupServiceProvider.getDefaultLookupService().getContext(targetContext);
+					if(remoteContext != null){
+						RoboReference<VectorEvent> roboReference = remoteContext.getReference(remoteUnit);
+						if(roboReference != null){
+							roboReference.sendMessage(message);
+						}
+					} else {
+						SimpleLoggingUtil.info(getClass(), String.format("context not found: %s", targetContext));
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	@Override
+	public void shutdown() {
+		active.set(false);
+		super.shutdown();
+	}
+
+	@Override
 	public void onMessage(VectorEvent message) {
 		SimpleLoggingUtil.info(getClass(), "received:" + message);
-		RoboContext remoteContext = LookupServiceProvider.getDefaultLookupService().getContext(targetContext);
-		if(remoteContext != null){
-			RoboReference<VectorEvent> roboReference = remoteContext.getReference(remoteUnit);
-			if(roboReference != null){
-				roboReference.sendMessage(message);
-			}
-		} else {
-			SimpleLoggingUtil.info(getClass(), String.format("context not found: %s", targetContext));
-		}
+		eventQueue.add(message);
 	}
 }
