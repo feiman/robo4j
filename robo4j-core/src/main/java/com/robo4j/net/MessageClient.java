@@ -29,9 +29,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Message client. Normally used by RemoteRoboContext to communicate with a
@@ -50,14 +47,15 @@ public class MessageClient {
 	/*
 	 * Executor for incoming messages from the server
 	 */
-	private final ExecutorService remoteReferenceCallExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread t = new Thread(r, "RemoteReferenceCallExecutor for " + messageServerURI);
-			t.setDaemon(true);
-			return t;
-		}
-	});
+	//TODO: this leads to uncontrolled Threads, we need to properly implement
+//	private final ExecutorService remoteReferenceCallExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+//		@Override
+//		public Thread newThread(Runnable r) {
+//			Thread t = new Thread(r, "RemoteReferenceCallExecutor for " + messageServerURI);
+//			t.setDaemon(true);
+//			return t;
+//		}
+//	});
 
 	/*
 	 * Listening to incoming messages from the server, initiated by serialized
@@ -145,7 +143,8 @@ public class MessageClient {
 		objectOutputStream.writeShort(MessageProtocolConstants.MAGIC);
 		objectOutputStream.writeUTF(sourceUUID);
 		remoteReferenceListener = new RemoteReferenceListener(socket);
-		remoteReferenceCallExecutor.execute(remoteReferenceListener);
+//		remoteReferenceCallExecutor.execute(remoteReferenceListener);
+		MessageClientThreadExecutor.getExecutor().execute(remoteReferenceListener);
 	}
 
 	public void sendMessage(String id, Object message) throws IOException {
@@ -206,7 +205,7 @@ public class MessageClient {
 			objectOutputStream.flush();
 			objectOutputStream.close();
 			remoteReferenceListener.shutdown();
-			remoteReferenceCallExecutor.shutdown();
+//			remoteReferenceCallExecutor.shutdown();
 			socket.close();
 		} catch (IOException e) {
 			// Do not care.
