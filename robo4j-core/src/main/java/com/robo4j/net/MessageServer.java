@@ -27,6 +27,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * This is a server that listens on messages, and sends them off to the
@@ -41,6 +44,7 @@ public class MessageServer {
 	public final static String KEY_HOST_NAME = "hostname";
 	public static final String KEY_PORT = "port";
 
+	private static final Set<ServerListener> activeListeners = new HashSet<>();
 	private volatile int listeningPort = 0;
 	private volatile String listeningHost;
 	private volatile boolean running = false;
@@ -134,6 +138,30 @@ public class MessageServer {
 		this.configuration = configuration;
 	}
 
+	private static class ServerListener {
+		private final String host;
+		private final int port;
+
+		ServerListener(String host, int port) {
+			this.host = host;
+			this.port = port;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			ServerListener that = (ServerListener) o;
+			return port == that.port &&
+					Objects.equals(host, that.host);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(host, port);
+		}
+	}
+
 	/**
 	 * This will be blocking/running until stop is called (and perhaps for longer).
 	 * Dispatch in whatever thread you feel appropriate.
@@ -153,13 +181,18 @@ public class MessageServer {
 				configuration.getInteger("backlog", 20), bindAddress)) {
 			listeningHost = serverSocket.getInetAddress().getHostAddress();
 			listeningPort = serverSocket.getLocalPort();
+
+			ServerListener serverListener = new ServerListener(listeningHost, listeningPort);
 			ThreadGroup g = new ThreadGroup("Robo4J communication threads");
 			running = true;
 			while (running) {
-				MessageHandler handler = new MessageHandler(serverSocket.accept());
-				Thread t = new Thread(g, handler, "Communication [" + handler.socket.getRemoteSocketAddress() + "]");
-				t.setDaemon(true);
-				t.start();
+				if(!activeListeners.contains(serverListener)){
+					activeListeners.add(serverListener);
+					MessageHandler handler = new MessageHandler(serverSocket.accept());
+					Thread t = new Thread(g, handler, "Communication [" + handler.socket.getRemoteSocketAddress() + "]");
+					t.setDaemon(true);
+					t.start();
+				}
 			}
 		} finally {
 			running = false;
