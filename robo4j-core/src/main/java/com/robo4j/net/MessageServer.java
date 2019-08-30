@@ -44,19 +44,45 @@ public class MessageServer {
 	public final static String KEY_HOST_NAME = "hostname";
 	public static final String KEY_PORT = "port";
 
-	private static final Set<ServerListener> activeListeners = new HashSet<>();
-	private volatile int listeningPort = 0;
-	private volatile String listeningHost;
-	private volatile boolean running = false;
-	private volatile Thread startingThread = null;
-	private MessageCallback callback;
-	private Configuration configuration;
+	private static class ServerListener {
+		private final String host;
+		private final int port;
+
+		ServerListener(String host, int port) {
+			this.host = host;
+			this.port = port;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+			ServerListener that = (ServerListener) o;
+			return port == that.port &&
+					Objects.equals(host, that.host);
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(host, port);
+		}
+
+		@Override
+		public String toString() {
+			return "ServerListener{" +
+					"host='" + host + '\'' +
+					", port=" + port +
+					'}';
+		}
+	}
 
 	private class MessageHandler implements Runnable {
-		private Socket socket;
+		private final Socket socket;
+		private final ServerListener serverListener;
 
-		public MessageHandler(Socket socket) {
+		public MessageHandler(Socket socket, ServerListener serverListener) {
 			this.socket = socket;
+			this.serverListener = serverListener;
 		}
 
 		@Override
@@ -82,7 +108,10 @@ public class MessageServer {
 
 			} catch (IOException e) {
 				SimpleLoggingUtil.error(getClass(),
-						"IO Exception communicating with " + socket.getRemoteSocketAddress(), e);
+						"IO Exception communicating with:" + socket.getRemoteSocketAddress(), e);
+				SimpleLoggingUtil.error(getClass(),
+						"IO Exception remove serverListener:" + serverListener, e);
+				activeListeners.remove(serverListener);
 			} catch (ClassNotFoundException e) {
 				SimpleLoggingUtil.error(getClass(),
 						"Could not find class to deserialize message to - will stop receiving messages from "
@@ -124,6 +153,14 @@ public class MessageServer {
 		}
 	}
 
+	private static final Set<ServerListener> activeListeners = new HashSet<>();
+	private volatile int listeningPort = 0;
+	private volatile String listeningHost;
+	private volatile boolean running = false;
+	private volatile Thread startingThread = null;
+	private MessageCallback callback;
+	private Configuration configuration;
+
 	/**
 	 * Constructor
 	 *
@@ -138,29 +175,6 @@ public class MessageServer {
 		this.configuration = configuration;
 	}
 
-	private static class ServerListener {
-		private final String host;
-		private final int port;
-
-		ServerListener(String host, int port) {
-			this.host = host;
-			this.port = port;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			ServerListener that = (ServerListener) o;
-			return port == that.port &&
-					Objects.equals(host, that.host);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(host, port);
-		}
-	}
 
 	/**
 	 * This will be blocking/running until stop is called (and perhaps for longer).
@@ -187,9 +201,9 @@ public class MessageServer {
 			running = true;
 			while (running) {
 				if(!activeListeners.contains(serverListener)){
-					MessageHandler handler = new MessageHandler(serverSocket.accept());
+					MessageHandler handler = new MessageHandler(serverSocket.accept(), serverListener);
 					activeListeners.add(serverListener);
-					Thread t = new Thread(g, handler, "Communication [" + handler.socket.getRemoteSocketAddress() + "]");
+					Thread t = new Thread(g, handler, "Robo4j: Communication [" + handler.socket.getRemoteSocketAddress() + "]");
 					t.setDaemon(true);
 					t.start();
 				}

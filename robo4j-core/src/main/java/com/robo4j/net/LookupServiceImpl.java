@@ -48,12 +48,13 @@ class LookupServiceImpl implements LookupService {
 	// FIXME(marcus/6 Nov 2017): This should be calculated, and used when
 	// constructing the packet
 	private final static int MAX_PACKET_SIZE = 1500;
+	private final Map<String, RoboContextDescriptorEntry> entries = new ConcurrentHashMap<>();
+	private final LocalLookupServiceImpl localContexts;
+	private final Map<String, RoboContext> remoteClientContexts = new ConcurrentHashMap<>();
 	private MulticastSocket socket;
 	private String address;
 	private int port;
 	private Updater currentUpdater;
-	private Map<String, RoboContextDescriptorEntry> entries = new ConcurrentHashMap<>();
-	private final LocalLookupServiceImpl localContexts;
 
 	private class Updater implements Runnable {
 		private byte[] buffer = new byte[MAX_PACKET_SIZE];
@@ -145,7 +146,6 @@ class LookupServiceImpl implements LookupService {
 		return Collections.unmodifiableMap(map);
 	}
 
-	private final Map<String, RoboContext> remoteClientContexts = new ConcurrentHashMap<>();
 	@Override
 	public RoboContext getContext(String id) {
 		RoboContextDescriptorEntry entry = entries.get(id);
@@ -153,7 +153,7 @@ class LookupServiceImpl implements LookupService {
 			if(remoteClientContexts.containsKey(id)){
 				return remoteClientContexts.get(id);
 			} else {
-				ClientRemoteRoboContext clientRemoteRoboContext = new ClientRemoteRoboContext(entry);
+				ClientRemoteRoboContext clientRemoteRoboContext = new ClientRemoteRoboContext(entry, remoteClientContexts);
 				remoteClientContexts.put(id, clientRemoteRoboContext);
 				return clientRemoteRoboContext;
 			}

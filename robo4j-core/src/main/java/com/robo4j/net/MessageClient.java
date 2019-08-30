@@ -17,6 +17,7 @@
 package com.robo4j.net;
 
 import com.robo4j.RoboContext;
+import com.robo4j.RoboReference;
 import com.robo4j.configuration.Configuration;
 import com.robo4j.logging.SimpleLoggingUtil;
 
@@ -29,6 +30,10 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Message client. Normally used by RemoteRoboContext to communicate with a
@@ -45,34 +50,23 @@ public class MessageClient {
 	public final static boolean DEFAULT_KEEP_ALIVE = true;
 
 	/*
-	 * Executor for incoming messages from the server
+	 * Listening to incoming messages from the server, initiated by serialized robo
+	 * references.
 	 */
-	//TODO: this leads to uncontrolled Threads, we need to properly implement
-//	private final ExecutorService remoteReferenceCallExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
-//		@Override
-//		public Thread newThread(Runnable r) {
-//			Thread t = new Thread(r, "RemoteReferenceCallExecutor for " + messageServerURI);
-//			t.setDaemon(true);
-//			return t;
-//		}
-//	});
-
-	/*
-	 * Listening to incoming messages from the server, initiated by serialized
-	 * robo references.
-	 */
-	private class RemoteReferenceListener implements Runnable {
+	private static class RemoteReferenceListener implements Runnable {
+		private final MessageClient messageClient;
 		private Socket socket;
-		private volatile boolean quit;
+		private volatile boolean active = true;
 
-		public RemoteReferenceListener(Socket socket) {
+		RemoteReferenceListener(Socket socket, MessageClient messageClient) {
 			this.socket = socket;
+			this.messageClient = messageClient;
 		}
 
 		@Override
 		public void run() {
 			ObjectInputStream ois = getStream();
-			while (!quit) {
+			while (active) {
 				try {
 					String uuid = ois.readUTF();
 					String id = ois.readUTF();
@@ -88,7 +82,10 @@ public class MessageClient {
 					// This will likely happen.
 					SimpleLoggingUtil.error(getClass(), e.getMessage());
 				} catch (Exception e) {
-					SimpleLoggingUtil.debug(MessageClient.class, "Message delivery failed for recipient", e);
+					SimpleLoggingUtil.debug(RemoteReferenceListener.class, "Message delivery shutdown: " + socket);
+					SimpleLoggingUtil.debug(RemoteReferenceListener.class, "Message delivery failed for recipient", e);
+					SimpleLoggingUtil.debug(RemoteReferenceListener.class, "Message delivery failed client:" + messageClient.sourceUUID);
+					shutdown();
 				} finally {
 					try {
 						ois.close();
@@ -111,13 +108,27 @@ public class MessageClient {
 		}
 
 		public void shutdown() {
-			quit = true;
+			active = false;
 		}
 
 	}
 
+	/*
+	 * Executor for incoming messages from the server
+	 */
+	// TODO: this leads to uncontrolled Threads, we need to properly implement
+	private final ExecutorService remoteReferenceCallExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(r, "Robo4J MessageClient:RemoteReference for " + messageServerURI);
+			t.setDaemon(true);
+			return t;
+		}
+	});
+
 	private final URI messageServerURI;
 	private final String sourceUUID;
+	private final Map<String, RoboReference> remoteClientReferences;
 	private Socket socket;
 	private ObjectOutputStream objectOutputStream;
 	private Configuration configuration;
@@ -125,16 +136,18 @@ public class MessageClient {
 	private final int maxFailCount;
 	private RemoteReferenceListener remoteReferenceListener;
 
-	public MessageClient(URI messageServerURI, String sourceUUID, Configuration configuration) {
+	public MessageClient(URI messageServerURI, String sourceUUID, Configuration configuration,
+			Map<String, RoboReference> remoteClientReferences) {
 		this.messageServerURI = messageServerURI;
 		this.sourceUUID = sourceUUID;
 		this.configuration = configuration;
 		this.maxFailCount = configuration.getInteger(KEY_RETRIES, 3);
+		this.remoteClientReferences = remoteClientReferences;
 	}
 
 	public void connect() throws UnknownHostException, IOException {
 		if (socket == null || socket.isClosed() || !socket.isConnected()) {
-//			socket = new Socket(messageServerURI.getHost(), messageServerURI.getPort());
+			// socket = new Socket(messageServerURI.getHost(), messageServerURI.getPort());
 			socket = new Socket(messageServerURI.getHost(), messageServerURI.getPort());
 			socket.setKeepAlive(configuration.getBoolean(KEY_KEEP_ALIVE, DEFAULT_KEEP_ALIVE));
 			socket.setSoTimeout(configuration.getInteger(KEY_SO_TIMEOUT, DEFAULT_SO_TIMEOUT));
@@ -142,9 +155,8 @@ public class MessageClient {
 		objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		objectOutputStream.writeShort(MessageProtocolConstants.MAGIC);
 		objectOutputStream.writeUTF(sourceUUID);
-		remoteReferenceListener = new RemoteReferenceListener(socket);
-//		remoteReferenceCallExecutor.execute(remoteReferenceListener);
-		MessageClientThreadExecutor.getExecutor().execute(remoteReferenceListener);
+		remoteReferenceListener = new RemoteReferenceListener(socket, this);
+		remoteReferenceCallExecutor.execute(remoteReferenceListener);
 	}
 
 	public void sendMessage(String id, Object message) throws IOException {
@@ -153,8 +165,9 @@ public class MessageClient {
 		} catch (IOException e) {
 			if (failCount < maxFailCount) {
 				failCount++;
-				connect();
-				sendMessage(id, message);
+				System.out.println("TRYING TO RECONNECT");
+//				connect();
+//				sendMessage(id, message);
 			} else {
 				throw e;
 			}
@@ -200,13 +213,33 @@ public class MessageClient {
 		return socket != null && socket.isConnected();
 	}
 
+	public String getSourceUUID() {
+		return sourceUUID;
+	}
+
 	public void shutdown() {
 		try {
-			objectOutputStream.flush();
-			objectOutputStream.close();
-			remoteReferenceListener.shutdown();
-//			remoteReferenceCallExecutor.shutdown();
-			socket.close();
+			SimpleLoggingUtil.debug(getClass(), "remoteClientReferences sourceUUID:" + sourceUUID);
+			if(objectOutputStream != null){
+				objectOutputStream.flush();
+				objectOutputStream.close();
+			} else {
+				System.out.println("MESSAGE CLIENT SHUTDOWN objectOutputStream=null");
+			}
+			if(remoteReferenceListener != null){
+				remoteReferenceListener.shutdown();
+			} else {
+				System.out.println("MESSAGE CLIENT SHUTDOWN remoteReferenceListener=null");
+			}
+
+			remoteReferenceCallExecutor.shutdown();
+
+			if(socket != null){
+				socket.close();
+			} else {
+				System.out.println("MESSAGE CLIENT SHUTDOWN socket=null");
+			}
+			System.out.println("MESSAGE CLIENT SHUTDOWN: " + sourceUUID);
 		} catch (IOException e) {
 			// Do not care.
 		}

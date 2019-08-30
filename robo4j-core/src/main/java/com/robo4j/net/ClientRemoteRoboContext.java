@@ -22,6 +22,7 @@ import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
 import com.robo4j.configuration.Configuration;
 import com.robo4j.configuration.ConfigurationFactory;
+import com.robo4j.logging.SimpleLoggingUtil;
 import com.robo4j.scheduler.Scheduler;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class ClientRemoteRoboContext implements RoboContext {
 	private class ClientRemoteRoboReference<T> implements RoboReference<T> {
 
 		private final String id;
+//		private final Map<String, RoboContext> remoteClientContexts;
 
 		ClientRemoteRoboReference(String id) {
 			this.id = id;
@@ -65,8 +67,23 @@ public class ClientRemoteRoboContext implements RoboContext {
 				}
 				client.sendMessage(id, message);
 			} catch (IOException e) {
-				// TODO: Error handling
-				e.printStackTrace();
+				SimpleLoggingUtil.error(getClass(), "Probably closed socket", e);
+				remoteClientReferences.entrySet().removeIf(entry -> entry.getKey().equals(id));
+				System.out.println("SOCKET ISSUE REFERENCE REMOVED id:" + id);
+				remoteClientReferences.forEach((k,v) -> {
+					System.out.println("SOCKET ISSUE REF: k:" + k + ", v:" + v);
+				});
+				System.out.println("SOCKET ISSUE: id: " + id + ", client:" + client);
+				System.out.println("SOCKET ISSUE: client: " + client);
+				remoteClientContexts.forEach((k,v) -> {
+					SimpleLoggingUtil.error(getClass(), "SOCKET ISSUE: remoteClientContexts k:" +k + ",v:" + v);
+				});
+				System.out.println("SOCKET ISSUE remove client: " + client.getSourceUUID());
+				remoteClientContexts.entrySet().removeIf(entry -> entry.getKey().equals(client.getSourceUUID()));
+				remoteClientContexts.forEach((k,v) -> {
+					System.out.println("SOCKET ISSUE AFTER remove k:" + k + ", v:" + v);
+				});
+				client.shutdown();
 			}
 		}
 
@@ -98,17 +115,19 @@ public class ClientRemoteRoboContext implements RoboContext {
 	}
 
 	private final RoboContextDescriptorEntry descriptorEntry;
-	private final MessageClient client;
 	private final Map<String, RoboReference> remoteClientReferences = new ConcurrentHashMap<>();
+	private final Map<String, RoboContext> remoteClientContexts;
+	private MessageClient client;
 
-	public ClientRemoteRoboContext(RoboContextDescriptorEntry descriptorEntry) {
+	public ClientRemoteRoboContext(RoboContextDescriptorEntry descriptorEntry, Map<String, RoboContext> remoteClientContexts) {
 		this.descriptorEntry = descriptorEntry;
 		client = initializeClient(descriptorEntry);
+		this.remoteClientContexts = remoteClientContexts;
 	}
 
 	private MessageClient initializeClient(RoboContextDescriptorEntry descriptorEntry) {
 		MessageClient client = new MessageClient(URI.create(descriptorEntry.descriptor.getMetadata().get(RoboContextDescriptor.KEY_URI)),
-				descriptorEntry.descriptor.getId(), ConfigurationFactory.createEmptyConfiguration());
+				descriptorEntry.descriptor.getId(), ConfigurationFactory.createEmptyConfiguration(), remoteClientReferences);
 		return client;
 	}
 
