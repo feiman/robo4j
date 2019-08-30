@@ -153,7 +153,7 @@ class LookupServiceImpl implements LookupService {
 			if(remoteClientContexts.containsKey(id)){
 				return remoteClientContexts.get(id);
 			} else {
-				ClientRemoteRoboContext clientRemoteRoboContext = new ClientRemoteRoboContext(entry, remoteClientContexts);
+				ClientRemoteRoboContext clientRemoteRoboContext = new ClientRemoteRoboContext(entries, entry, remoteClientContexts);
 				remoteClientContexts.put(id, clientRemoteRoboContext);
 				return clientRemoteRoboContext;
 			}

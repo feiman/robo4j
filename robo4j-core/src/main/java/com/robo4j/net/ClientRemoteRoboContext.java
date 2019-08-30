@@ -68,6 +68,10 @@ public class ClientRemoteRoboContext implements RoboContext {
 				client.sendMessage(id, message);
 			} catch (IOException e) {
 				SimpleLoggingUtil.error(getClass(), "Probably closed socket", e);
+
+				entries.entrySet().removeIf(entry -> entry.getValue().equals(descriptorEntry));
+				System.out.println("SOCKET ISSUE REMOVE DESCRIPTOR ENTRY: " + descriptorEntry);
+
 				remoteClientReferences.entrySet().removeIf(entry -> entry.getKey().equals(id));
 				System.out.println("SOCKET ISSUE REFERENCE REMOVED id:" + id);
 				remoteClientReferences.forEach((k,v) -> {
@@ -114,12 +118,16 @@ public class ClientRemoteRoboContext implements RoboContext {
 
 	}
 
+	private final Map<String, RoboContextDescriptorEntry> entries;
 	private final RoboContextDescriptorEntry descriptorEntry;
 	private final Map<String, RoboReference> remoteClientReferences = new ConcurrentHashMap<>();
 	private final Map<String, RoboContext> remoteClientContexts;
 	private MessageClient client;
 
-	public ClientRemoteRoboContext(RoboContextDescriptorEntry descriptorEntry, Map<String, RoboContext> remoteClientContexts) {
+	public ClientRemoteRoboContext(Map<String, RoboContextDescriptorEntry> entries,
+								   RoboContextDescriptorEntry descriptorEntry,
+								   Map<String, RoboContext> remoteClientContexts) {
+		this.entries = entries;
 		this.descriptorEntry = descriptorEntry;
 		client = initializeClient(descriptorEntry);
 		this.remoteClientContexts = remoteClientContexts;

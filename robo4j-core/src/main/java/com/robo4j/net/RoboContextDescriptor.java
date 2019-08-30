@@ -17,6 +17,7 @@
 package com.robo4j.net;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A descriptor for a RoboContext on the network.
@@ -62,6 +63,21 @@ public class RoboContextDescriptor {
 	 */
 	public int getHeartBeatInterval() {
 		return heartBeatInterval;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		RoboContextDescriptor that = (RoboContextDescriptor) o;
+		return heartBeatInterval == that.heartBeatInterval &&
+				Objects.equals(id, that.id) &&
+				Objects.equals(metaData, that.metaData);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, heartBeatInterval, metaData);
 	}
 
 	@Override

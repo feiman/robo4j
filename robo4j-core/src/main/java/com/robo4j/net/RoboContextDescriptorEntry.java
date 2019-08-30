@@ -17,6 +17,7 @@
 package com.robo4j.net;
 
 import java.net.InetAddress;
+import java.util.Objects;
 
 /**
  * Internal bookkeeping class for discoveries.
@@ -28,4 +29,18 @@ class RoboContextDescriptorEntry {
 	public RoboContextDescriptor descriptor;
 	public long lastAccess;
 	public InetAddress address;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		RoboContextDescriptorEntry that = (RoboContextDescriptorEntry) o;
+		return Objects.equals(descriptor, that.descriptor) &&
+				Objects.equals(address, that.address);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(descriptor, address);
+	}
 }
