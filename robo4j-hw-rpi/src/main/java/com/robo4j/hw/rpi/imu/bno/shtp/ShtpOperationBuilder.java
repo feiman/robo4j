@@ -15,31 +15,31 @@
  * along with Robo4J. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.robo4j.hw.rpi.imu.bno;
+package com.robo4j.hw.rpi.imu.bno.shtp;
 
 /**
- * DeviceEventType event type {@link DeviceEvent}
+ * ShtpOperationBuilder provides a chain of operation needs to by processed in desired order
  *
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-public enum DeviceEventType {
-    //@formatter:off
-    NONE                    (-1),
-    MAGNETOMETER			(4),
-    ACCELEROMETER_RAW 		(8),
-    ACCELEROMETER_LINEAR 	(8),
-    GYROSCOPE				(9),
-    VECTOR_GAME             (14),
-    VECTOR_ROTATION         (14);
-    //@formatter:on
-    private final int qPoint;
+public class ShtpOperationBuilder {
 
-    DeviceEventType(int qPoint) {
-        this.qPoint = qPoint;
+    private final ShtpOperation head;
+    private ShtpOperation current;
+
+    public ShtpOperationBuilder(ShtpOperation head) {
+        this.head = head;
+        this.current = head;
     }
 
-    public int getQ(){
-        return qPoint;
+    public ShtpOperationBuilder addOperation(ShtpOperation operation){
+        current.setNext(operation);
+        current = operation;
+        return this;
+    }
+
+    public ShtpOperation build(){
+        return head;
     }
 }

@@ -21,31 +21,43 @@ import com.robo4j.RoboBuilder;
 import com.robo4j.RoboContext;
 import com.robo4j.RoboReference;
 import com.robo4j.hw.rpi.imu.bno.DeviceEvent;
+import com.robo4j.net.LookupService;
+import com.robo4j.net.LookupServiceProvider;
 import com.robo4j.util.SystemUtil;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * XYZEventEmiterListenerExample is an example displaying received data from GYROSCOPE.
- * Data are provided by {@link com.robo4j.hw.rpi.imu.impl.BNO080SPIDevice}
+ * VectorEventEmitterListenerExample is simple robo4j system displaying Rotation Vector event from
+ * {@link com.robo4j.hw.rpi.imu.impl.BNO080SPIDevice}
  *
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-public class XYZEventEmiterListenerExample {
-
+public class VectorEventEmitterListenerExample {
     public static void main(String[] args) throws Exception{
-        RoboBuilder builder = new RoboBuilder();
-        InputStream settings = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("bno080XYZexample.xml");
-        if (settings == null) {
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        InputStream systemIS = classLoader.getResourceAsStream("bno080VectorSystemEmitterExample.xml");
+        InputStream settings =classLoader.getResourceAsStream("bno080VectorExample.xml");
+
+        if (systemIS == null && settings == null) {
             System.out.println("Could not find the settings for the BNO080 Example!");
             System.exit(2);
         }
+        RoboBuilder builder = new RoboBuilder(systemIS);
         builder.add(settings);
         RoboContext ctx = builder.build();
 
         ctx.start();
+
+        LookupService service = LookupServiceProvider.getDefaultLookupService();
+        try {
+            service.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("State after start:");
         System.out.println(SystemUtil.printStateReport(ctx));

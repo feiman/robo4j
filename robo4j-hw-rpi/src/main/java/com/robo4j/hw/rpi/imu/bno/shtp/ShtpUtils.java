@@ -15,7 +15,10 @@
  * along with Robo4J. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.robo4j.hw.rpi.imu.bno;
+package com.robo4j.hw.rpi.imu.bno.shtp;
+
+import com.robo4j.hw.rpi.imu.bno.DeviceEvent;
+import com.robo4j.hw.rpi.imu.bno.DeviceEventType;
 
 /**
  * ShtpUtils collection of useful utils
@@ -42,8 +45,8 @@ public final class ShtpUtils {
 	}
 
 	/**
-	 * Print hexadecimal values of int array to system output
-	 * s
+	 * Print hexadecimal values of int array to system out.
+	 * 
 	 * @param message
 	 *            message
 	 * @param array
@@ -58,10 +61,13 @@ public final class ShtpUtils {
 	}
 
 	/**
+	 * Reads the first byte in the array as an unsigned byte, represented as an
+	 * int.
 	 *
 	 * @param array
-	 *            byte array
-	 * @return unsigned 8-bit int
+	 *            byte array from which to read the first element.
+	 * @return the first byte in the array read as an unsigned byte, represented
+	 *         as an int.
 	 */
 	public static int toInt8U(byte[] array) {
 		return array[0] & 0xFF;
@@ -71,6 +77,8 @@ public final class ShtpUtils {
 	 * Empty Shtp Device Event
 	 */
 	public static final DeviceEvent emptyEvent = new DeviceEvent() {
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public DeviceEventType getType() {
 			return DeviceEventType.NONE;
@@ -83,7 +91,7 @@ public final class ShtpUtils {
 	};
 
 	/**
-	 * calculate packet length
+	 * Calculate packet length.
 	 * 
 	 * @param packetMSB
 	 *            uint8
