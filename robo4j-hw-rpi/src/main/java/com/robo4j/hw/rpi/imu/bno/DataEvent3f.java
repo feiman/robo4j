@@ -15,56 +15,48 @@
  * along with Robo4J. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.robo4j.hw.rpi.i2c.adafruitbackpack;
+package com.robo4j.hw.rpi.imu.bno;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.robo4j.math.geometry.Tuple3f;
+
 /**
+ * Event used for data produced by the Bno080.
+ *
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-public class PackElement implements Serializable {
+public class DataEvent3f implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private final int x;
-	private final int y;
-	private final BiColor color;
+	private final DataEventType type;
+	private final int status;
+	private final Tuple3f data;
+	private final long timestamp;
 
-	public PackElement(int x, int y, BiColor color) {
-		this.x = x;
-		this.y = y;
-		this.color = color;
+	public DataEvent3f(DataEventType type, int status, Tuple3f data, long timestamp) {
+		this.type = type;
+		this.status = status;
+		this.data = data;
+		this.timestamp = timestamp;
 	}
 
-	public PackElement(int x, int y) {
-		this.x = x;
-		this.y = y;
-		this.color = BiColor.OFF;
+	public DataEventType getType() {
+		return type;
 	}
 
-	public PackElement(int x, BiColor color) {
-		this.x = x;
-		this.y = 0;
-		this.color = color;
+	public int getStatus() {
+		return status;
 	}
 
-	public PackElement(int x) {
-		this.x = x;
-		this.y = 0;
-		this.color = BiColor.OFF;
+	public Tuple3f getData() {
+		return data;
 	}
 
-	public int getX() {
-		return x;
-	}
-
-	public int getY() {
-		return y;
-	}
-
-	public BiColor getColor() {
-		return color;
+	public long getTimestamp() {
+		return timestamp;
 	}
 
 	@Override
@@ -73,17 +65,17 @@ public class PackElement implements Serializable {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		PackElement that = (PackElement) o;
-		return x == that.x && y == that.y && color == that.color;
+		DataEvent3f that = (DataEvent3f) o;
+		return status == that.status && timestamp == that.timestamp && type == that.type && Objects.equals(data, that.data);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(x, y, color);
+		return Objects.hash(type, status, data, timestamp);
 	}
 
 	@Override
 	public String toString() {
-		return "PackElement{" + "x=" + x + ", y=" + y + ", color=" + color + '}';
+		return "DataEvent3f{" + "type=" + type + ", status=" + status + ", data=" + data + ", timestamp=" + timestamp + '}';
 	}
 }
