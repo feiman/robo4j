@@ -23,7 +23,7 @@ import java.util.Objects;
 
 /**
  *  wrapper for http request result
- *  @see RoboRequestCallable
+ *  @see HttpRequestProcessor
  *
  * @author Marcus Hirt (@hirt)
  * @author Miro Wengner (@miragemiko)

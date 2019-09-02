@@ -14,27 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with Robo4J. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.robo4j.socket.http.util;
 
-import com.robo4j.ConfigurationException;
-import com.robo4j.socket.http.units.CodecRegistry;
+package com.robo4j.socket.http.request;
 
-import static com.robo4j.util.Utf8Constant.UTF8_COMMA;
+import java.util.Objects;
+import java.util.concurrent.Callable;
 
 /**
- * Codec Registry for codecs used for json socket communication
+ * HttpRequestProcessor processes the incomming http request
  *
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-public class CodeRegistryUtils {
+public class HttpRequestProcessor implements Callable<HttpResponseProcess> {
 
-	public static CodecRegistry getCodecRegistry(String packages) throws ConfigurationException {
-		if (RoboHttpUtils.validatePackages(packages)) {
-			return new CodecRegistry(Thread.currentThread().getContextClassLoader(), packages.split(UTF8_COMMA));
-		} else {
-			throw new ConfigurationException("not valid code package");
-		}
+	private final HttpRequestContext requestContext;
+
+	public HttpRequestProcessor(HttpRequestContext requestContext) {
+		Objects.requireNonNull(requestContext, "not allowed empty requestContext");
+		this.requestContext = requestContext;
 	}
 
+	@Override
+	public HttpResponseProcess call() throws Exception {
+		final RequestChainHandler requestChainHandler = new RequestChainHandler.Builder(requestContext).build();
+		return requestChainHandler.process();
+	}
 }

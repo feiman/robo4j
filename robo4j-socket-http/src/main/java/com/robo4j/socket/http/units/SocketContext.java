@@ -41,8 +41,30 @@ public interface SocketContext<T> {
 
 	void putProperty(String key, Object val);
 
+	/**
+	 * get property or null
+	 *
+	 * @param clazz
+	 *            property instance type
+	 * @param key
+	 *            properties id
+	 * @param <E>
+	 *            requested object instance type
+	 * @return object instance
+	 */
 	<E> E getProperty(Class<E> clazz, String key);
 
+	/**
+	 * get existing object instance from properties and avoid null check
+	 * 
+	 * @param clazz
+	 *            property instance type
+	 * @param key
+	 *            properties id
+	 * @param <E>
+	 *            requested object instance type
+	 * @return object instance
+	 */
 	<E> E getPropertySafe(Class<E> clazz, String key);
 
 }

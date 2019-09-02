@@ -55,45 +55,6 @@ public class RoboHttpUnitGetTestApp {
 	}
 
 	/**
-	 * Run the system with only server unit
-	 * 
-	 * @throws Exception
-	 *             exception
-	 */
-	public void systemWithHttpServerOnlyTest() throws Exception {
-		final HttpPathConfigJsonBuilder pathBuilder = HttpPathConfigJsonBuilder.Builder()
-				.addPath(HttpServerUnit.NAME, HttpMethod.GET)
-				.addPath(StringMessageUnit.NAME, HttpMethod.GET);
-
-		//@formatter:off
-		Configuration systemConfiguration = new ConfigurationBuilder()
-				.addInteger("poolSizeScheduler", 3)
-				.addInteger("poolSizeWorker", 2)
-				.addInteger("poolSizeBlocking", 2)
-				.build();
-		RoboBuilder builder = new RoboBuilder("roboSystem1", systemConfiguration);
-		//@formatter:on
-
-		//@formatter:off
-		Configuration configServer = new ConfigurationBuilder()
-				.addInteger(PROPERTY_SOCKET_PORT, SERVER_PORT)
-				.addString(PROPERTY_CODEC_PACKAGES, "com.robo4j.socket.http.codec")
-				.addString(PROPERTY_UNIT_PATHS_CONFIG, pathBuilder.build())
-				.build();
-		//@formatter:on
-		builder.add(HttpServerUnit.class, configServer, HttpServerUnit.NAME);
-		builder.add(StringMessageUnit.class, StringMessageUnit.NAME);
-		RoboContext system = builder.build();
-
-		system.start();
-		System.out.println("systemPong: State after start:");
-		System.out.println(SystemUtil.printStateReport(system));
-		System.out.println("Press <Enter>...");
-		System.in.read();
-		system.shutdown();
-	}
-
-	/**
 	 * Run the system with known attributes
 	 * 
 	 * @throws Exception
@@ -166,6 +127,45 @@ public class RoboHttpUnitGetTestApp {
 		System.out.println("Press <Enter>...");
 		System.in.read();
 		systemGetProvider.shutdown();
+	}
+
+	/**
+	 * Run the system with only server unit
+	 *
+	 * @throws Exception
+	 *             exception
+	 */
+	private void systemWithHttpServerOnlyTest() throws Exception {
+		final HttpPathConfigJsonBuilder pathBuilder = HttpPathConfigJsonBuilder.Builder()
+				.addPath(HttpServerUnit.NAME, HttpMethod.GET)
+				.addPath(StringMessageUnit.NAME, HttpMethod.GET);
+
+		//@formatter:off
+		Configuration systemConfiguration = new ConfigurationBuilder()
+				.addInteger("poolSizeScheduler", 3)
+				.addInteger("poolSizeWorker", 2)
+				.addInteger("poolSizeBlocking", 2)
+				.build();
+		RoboBuilder builder = new RoboBuilder("roboSystem1", systemConfiguration);
+		//@formatter:on
+
+		//@formatter:off
+		Configuration configServer = new ConfigurationBuilder()
+				.addInteger(PROPERTY_SOCKET_PORT, SERVER_PORT)
+				.addString(PROPERTY_CODEC_PACKAGES, "com.robo4j.socket.http.codec")
+				.addString(PROPERTY_UNIT_PATHS_CONFIG, pathBuilder.build())
+				.build();
+		//@formatter:on
+		builder.add(HttpServerUnit.class, configServer, HttpServerUnit.NAME);
+		builder.add(StringMessageUnit.class, StringMessageUnit.NAME);
+		RoboContext system = builder.build();
+
+		system.start();
+		System.out.println("systemPong: State after start:");
+		System.out.println(SystemUtil.printStateReport(system));
+		System.out.println("Press <Enter>...");
+		System.in.read();
+		system.shutdown();
 	}
 
 	private RoboContext attributeRequestSystem() throws Exception {

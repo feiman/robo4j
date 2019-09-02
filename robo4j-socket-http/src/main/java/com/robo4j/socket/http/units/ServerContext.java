@@ -102,6 +102,7 @@ public class ServerContext implements SocketContext<ServerPathConfig> {
 
 	/**
 	 *
+	 *
 	 * @param clazz
 	 *            desired known class E
 	 * @param key

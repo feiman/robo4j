@@ -19,10 +19,9 @@ package com.robo4j.socket.http.channel;
 import com.robo4j.RoboContext;
 import com.robo4j.socket.http.SocketException;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
+import com.robo4j.socket.http.request.HttpRequestContext;
+import com.robo4j.socket.http.request.HttpRequestProcessor;
 import com.robo4j.socket.http.request.HttpResponseProcess;
-import com.robo4j.socket.http.request.RoboRequestCallable;
-import com.robo4j.socket.http.request.RoboRequestFactory;
-import com.robo4j.socket.http.units.CodecRegistry;
 import com.robo4j.socket.http.units.ServerContext;
 import com.robo4j.socket.http.util.ChannelRequestBuffer;
 
@@ -33,8 +32,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static com.robo4j.socket.http.util.RoboHttpUtils.PROPERTY_CODEC_REGISTRY;
 
 /**
  * Reading TPC/IP Socket protocol handler
@@ -67,11 +64,12 @@ public class ReadSelectionKeyHandler implements SelectionKeyHandler {
 		try {
 			final HttpDecoratedRequest decoratedRequest = channelRequestBuffer
 					.getHttpDecoratedRequestByChannel(channel);
-			final CodecRegistry codecRegistry = serverContext.getPropertySafe(CodecRegistry.class, PROPERTY_CODEC_REGISTRY);
-			final RoboRequestFactory factory = new RoboRequestFactory(codecRegistry);
-			final RoboRequestCallable callable = new RoboRequestCallable(context, serverContext, decoratedRequest,
-					factory);
-			final Future<HttpResponseProcess> futureResult = context.getScheduler().submit(callable);
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder()
+					.addDecoratedRequest(decoratedRequest)
+					.build(context, serverContext);
+//			final RoboRequestCallable callable = new RoboRequestCallable(httpRequestContext);
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			final Future<HttpResponseProcess> futureResult = context.getScheduler().submit(processor);
 			final HttpResponseProcess result = extractRoboResponseProcess(futureResult);
 			outBuffers.put(key, result);
 			registerSelectionKey(channel);

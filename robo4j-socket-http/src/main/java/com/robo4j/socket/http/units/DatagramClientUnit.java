@@ -24,7 +24,7 @@ import com.robo4j.configuration.Configuration;
 import com.robo4j.socket.http.channel.OutboundDatagramSocketChannelHandler;
 import com.robo4j.socket.http.dto.HttpPathMethodDTO;
 import com.robo4j.socket.http.message.DatagramDecoratedRequest;
-import com.robo4j.socket.http.util.CodeRegistryUtils;
+import com.robo4j.socket.http.util.CodecRegistryUtils;
 import com.robo4j.socket.http.util.DatagramPathUtils;
 import com.robo4j.socket.http.util.JsonUtil;
 
@@ -75,7 +75,7 @@ public class DatagramClientUnit extends RoboUnit<DatagramDecoratedRequest> {
 		clientContext.putProperty(PROPERTY_HOST, host);
 		clientContext.putProperty(PROPERTY_SOCKET_PORT, port);
 		clientContext.putProperty(PROPERTY_BUFFER_CAPACITY, bufferCapacity);
-		clientContext.putProperty(PROPERTY_CODEC_REGISTRY, CodeRegistryUtils.getCodecRegistry(packages));
+		clientContext.putProperty(PROPERTY_CODEC_REGISTRY, CodecRegistryUtils.init(packages));
 	}
 
 	@Override
