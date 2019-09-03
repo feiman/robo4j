@@ -29,7 +29,7 @@ import com.robo4j.hw.rpi.imu.bno.shtp.SensorReportId;
  * @author Marcus Hirt (@hirt)
  * @author Miroslav Wengner (@miragemiko)
  */
-public class Bno080ExampleUdate {
+public class Bno080Example {
 
 	public static void main(String[] args) throws Exception {
 		DataListener listener = (DataEvent3f event) -> System.out.println("ShtpPacketResponse: " + event);
