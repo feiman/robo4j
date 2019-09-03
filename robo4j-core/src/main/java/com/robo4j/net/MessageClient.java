@@ -17,7 +17,6 @@
 package com.robo4j.net;
 
 import com.robo4j.RoboContext;
-import com.robo4j.RoboReference;
 import com.robo4j.configuration.Configuration;
 import com.robo4j.logging.SimpleLoggingUtil;
 
@@ -30,7 +29,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -128,7 +126,6 @@ public class MessageClient {
 
 	private final URI messageServerURI;
 	private final String sourceUUID;
-	private final Map<String, RoboReference> remoteClientReferences;
 	private Socket socket;
 	private ObjectOutputStream objectOutputStream;
 	private Configuration configuration;
@@ -136,13 +133,11 @@ public class MessageClient {
 	private final int maxFailCount;
 	private RemoteReferenceListener remoteReferenceListener;
 
-	public MessageClient(URI messageServerURI, String sourceUUID, Configuration configuration,
-			Map<String, RoboReference> remoteClientReferences) {
+	public MessageClient(URI messageServerURI, String sourceUUID, Configuration configuration) {
 		this.messageServerURI = messageServerURI;
 		this.sourceUUID = sourceUUID;
 		this.configuration = configuration;
 		this.maxFailCount = configuration.getInteger(KEY_RETRIES, 3);
-		this.remoteClientReferences = remoteClientReferences;
 	}
 
 	public void connect() throws UnknownHostException, IOException {

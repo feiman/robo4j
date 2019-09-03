@@ -17,7 +17,6 @@
 package com.robo4j.net;
 
 import com.robo4j.RoboContext;
-import com.robo4j.RoboReference;
 import com.robo4j.configuration.Configuration;
 import com.robo4j.configuration.ConfigurationBuilder;
 import com.robo4j.configuration.ConfigurationFactory;
@@ -27,8 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -50,7 +47,6 @@ public class MessageServerTest {
 
 	@Test
 	void testClientServerMessagePassing() throws Exception {
-		final Map<String, RoboReference> remoteClientReferences = new ConcurrentHashMap<>();
 		final List<String> messages = new ArrayList<>();
 		final CountDownLatch messageLatch = new CountDownLatch(3);
 
@@ -81,7 +77,7 @@ public class MessageServerTest {
 		}
 
 		Configuration clientConfig = ConfigurationFactory.createEmptyConfiguration();
-		MessageClient client = new MessageClient(server.getListeningURI(), CONST_MYUUID, clientConfig, remoteClientReferences);
+		MessageClient client = new MessageClient(server.getListeningURI(), CONST_MYUUID, clientConfig);
 		if (exception != null) {
 			throw exception;
 		}
@@ -107,7 +103,6 @@ public class MessageServerTest {
 
 	@Test
 	void testMessageTypes() throws Exception {
-		final Map<String, RoboReference> remoteClientReferences = new ConcurrentHashMap<>();
 		final String messageText = "Lalala";
 		final int messagesNumber = 8;
 		final List<Object> messages = new ArrayList<>(messagesNumber);
@@ -140,7 +135,7 @@ public class MessageServerTest {
 		}
 
 		Configuration clientConfig = ConfigurationFactory.createEmptyConfiguration();
-		MessageClient client = new MessageClient(server.getListeningURI(), CONST_MYUUID, clientConfig, remoteClientReferences);
+		MessageClient client = new MessageClient(server.getListeningURI(), CONST_MYUUID, clientConfig);
 		if (exception != null) {
 			throw exception;
 		}

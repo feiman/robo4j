@@ -120,6 +120,7 @@ public class ClientRemoteRoboContext implements RoboContext {
 
 	private final Map<String, RoboContextDescriptorEntry> entries;
 	private final RoboContextDescriptorEntry descriptorEntry;
+	@SuppressWarnings("rawtypes")
 	private final Map<String, RoboReference> remoteClientReferences = new ConcurrentHashMap<>();
 	private final Map<String, RoboContext> remoteClientContexts;
 	private MessageClient client;
@@ -135,7 +136,7 @@ public class ClientRemoteRoboContext implements RoboContext {
 
 	private MessageClient initializeClient(RoboContextDescriptorEntry descriptorEntry) {
 		MessageClient client = new MessageClient(URI.create(descriptorEntry.descriptor.getMetadata().get(RoboContextDescriptor.KEY_URI)),
-				descriptorEntry.descriptor.getId(), ConfigurationFactory.createEmptyConfiguration(), remoteClientReferences);
+				descriptorEntry.descriptor.getId(), ConfigurationFactory.createEmptyConfiguration());
 		return client;
 	}
 
@@ -156,6 +157,7 @@ public class ClientRemoteRoboContext implements RoboContext {
 	public void start() {
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> RoboReference<T> getReference(String id) {
 		if(remoteClientReferences.containsKey(id)){
