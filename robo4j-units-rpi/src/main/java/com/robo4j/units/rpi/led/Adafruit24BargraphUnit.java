@@ -66,7 +66,7 @@ public class Adafruit24BargraphUnit extends AbstractI2CBackpackUnit<BiColor24Bar
 
 	@Override
 	void addElements(List<PackElement> elements) {
-		int size = elements.size() > BiColor24BarDevice.MAX_BARS ? BiColor24BarDevice.MAX_BARS : elements.size();
+		int size = Math.min(elements.size(), BiColor24BarDevice.MAX_BARS);
 		for (int i = 0; i < size; i++) {
 			PackElement element = elements.get(i);
 			device.addBar(element);
