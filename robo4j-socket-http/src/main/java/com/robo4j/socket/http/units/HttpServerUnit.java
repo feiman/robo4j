@@ -26,7 +26,7 @@ import com.robo4j.RoboUnit;
 import com.robo4j.configuration.Configuration;
 import com.robo4j.socket.http.channel.InboundHttpSocketChannelHandler;
 import com.robo4j.socket.http.dto.HttpPathMethodDTO;
-import com.robo4j.socket.http.util.CodeRegistryUtils;
+import com.robo4j.socket.http.util.CodecRegistryUtils;
 import com.robo4j.socket.http.util.HttpPathUtils;
 import com.robo4j.socket.http.util.JsonUtil;
 import com.robo4j.socket.http.util.RoboHttpUtils;
@@ -89,7 +89,7 @@ public class HttpServerUnit extends RoboUnit<Object> {
 
 		String packages = configuration.getString(PROPERTY_CODEC_PACKAGES, DEFAULT_PACKAGE);
 
-		serverContext.putProperty(PROPERTY_CODEC_REGISTRY, CodeRegistryUtils.getCodecRegistry(packages));
+		serverContext.putProperty(PROPERTY_CODEC_REGISTRY, CodecRegistryUtils.init(packages));
 
 	}
 

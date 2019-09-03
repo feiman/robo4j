@@ -18,7 +18,6 @@
 package com.robo4j.socket.http.request;
 
 import com.robo4j.AttributeDescriptor;
-import com.robo4j.ConfigurationException;
 import com.robo4j.DefaultAttributeDescriptor;
 import com.robo4j.LifecycleState;
 import com.robo4j.RoboContext;
@@ -28,13 +27,12 @@ import com.robo4j.socket.http.codec.SimpleCommand;
 import com.robo4j.socket.http.dto.ResponseUnitDTO;
 import com.robo4j.socket.http.enums.StatusCode;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
-import com.robo4j.socket.http.units.CodecRegistry;
 import com.robo4j.socket.http.units.HttpServerUnit;
 import com.robo4j.socket.http.units.PathHttpMethod;
 import com.robo4j.socket.http.units.ServerContext;
 import com.robo4j.socket.http.units.ServerPathConfig;
 import com.robo4j.socket.http.util.ChannelRequestBuffer;
-import com.robo4j.socket.http.util.CodeRegistryUtils;
+import com.robo4j.socket.http.util.CodecRegistryUtils;
 import com.robo4j.socket.http.util.HttpPathConfigJsonBuilder;
 import com.robo4j.socket.http.util.JsonUtil;
 import org.junit.jupiter.api.Test;
@@ -57,6 +55,8 @@ import static com.robo4j.socket.http.util.HttpPathUtils.DEFAULT_GET_SERVER_METHO
 import static com.robo4j.socket.http.util.HttpPathUtils.DEFAULT_GET_SERVER_PATH_CONFIG;
 import static com.robo4j.socket.http.util.TestUtils.getResourcePath;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -72,15 +72,18 @@ class RoboRequestCallableTests {
 		HttpResponseProcess expectedResponse = new HttpResponseProcess(null, null, null, StatusCode.BAD_REQUEST, null);
 		RoboContext roboContext = mock(RoboContext.class);
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 
 		final Path path = getResourcePath("httpGetRequestDefaultPath.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
+
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -98,12 +101,14 @@ class RoboRequestCallableTests {
 		Collection<RoboReference<?>> units = Arrays.asList(httpServerUnit, sensorLightUnit, sensorSoundUnit);
 		when(roboContext.getUnits()).thenReturn(units);
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		when(serverContext.getPathConfig(DEFAULT_GET_SERVER_METHOD)).thenReturn(DEFAULT_GET_SERVER_PATH_CONFIG);
 
-		RoboRequestFactory factory = initRoboRequestFactory();
+		final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(null)
+				.build(roboContext, serverContext);
 
-		RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, null, factory);
-		HttpResponseProcess process = callable.call();
+		final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+		HttpResponseProcess process = processor.call();
 
 		assertEquals(expectedResponse, process);
 	}
@@ -120,16 +125,18 @@ class RoboRequestCallableTests {
 		Collection<RoboReference<?>> units = Arrays.asList(httpServerUnit, sensorLightUnit, sensorSoundUnit);
 		when(roboContext.getUnits()).thenReturn(units);
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		when(serverContext.getPathConfig(DEFAULT_GET_SERVER_METHOD)).thenReturn(DEFAULT_GET_SERVER_PATH_CONFIG);
 
 		final Path path = getResourcePath("httpGetRequestPathSensorSetupUnitWithAttributes.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -156,16 +163,18 @@ class RoboRequestCallableTests {
 		Collection<RoboReference<?>> units = Arrays.asList(httpServerUnit, sensorLightUnit, sensorSoundUnit);
 		when(roboContext.getUnits()).thenReturn(units);
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		when(serverContext.getPathConfig(DEFAULT_GET_SERVER_METHOD)).thenReturn(DEFAULT_GET_SERVER_PATH_CONFIG);
 
 		final Path path = getResourcePath("httpGetRequestDefaultPath.txt");
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -205,6 +214,7 @@ class RoboRequestCallableTests {
 
 		when(httpServerUnit.getMessageType()).thenReturn(Object.class);
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		when(serverContext.getPathConfig(new PathHttpMethod(pathConfig, HttpMethod.GET)))
 				.thenReturn(new ServerPathConfig(pathConfig, httpServerUnit, HttpMethod.GET));
 
@@ -212,10 +222,11 @@ class RoboRequestCallableTests {
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -260,12 +271,12 @@ class RoboRequestCallableTests {
 		when(roboContext.getUnits()).thenReturn(units);
 
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		RoboReference<Object> sensorSetupUnitMockReference = (RoboReference<Object>) sensorSetupUnitMock;
 		ServerPathConfig initiatedGetRequest = new ServerPathConfig(pathConfig, sensorSetupUnitMockReference,
 				HttpMethod.GET);
 		when(serverContext.getPathConfig(new PathHttpMethod(pathConfig, HttpMethod.GET)))
 				.thenReturn(initiatedGetRequest);
-
 		when(serverContext.getPathConfigByPath(pathConfig)).thenReturn(Arrays.asList(initiatedGetRequest,
 				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.POST),
 				new ServerPathConfig(pathConfig, sensorSetupUnitMockReference, HttpMethod.PUT)));
@@ -274,10 +285,11 @@ class RoboRequestCallableTests {
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -310,6 +322,7 @@ class RoboRequestCallableTests {
 		when(roboContext.getUnits()).thenReturn(units);
 
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		RoboReference<Object> sensorSetupUnitMockReference = (RoboReference<Object>) sensorSetupUnitMock;
 		ServerPathConfig initiatedGetRequest = new ServerPathConfig(pathConfig, sensorSetupUnitMockReference,
 				HttpMethod.GET);
@@ -324,10 +337,11 @@ class RoboRequestCallableTests {
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -363,6 +377,7 @@ class RoboRequestCallableTests {
 		when(roboContext.getUnits()).thenReturn(units);
 
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		RoboReference<Object> sensorSetupUnitMockReference = (RoboReference<Object>) sensorSetupUnitMock;
 		ServerPathConfig initiatedGetRequest = new ServerPathConfig(pathConfig, sensorSetupUnitMockReference,
 				HttpMethod.GET);
@@ -377,10 +392,11 @@ class RoboRequestCallableTests {
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -419,6 +435,7 @@ class RoboRequestCallableTests {
 		when(roboContext.getUnits()).thenReturn(units);
 
 		ServerContext serverContext = mock(ServerContext.class);
+		when(serverContext.getPropertySafe(any(), anyString())).thenReturn(CodecRegistryUtils.init(DEFAULT_PACKAGE));
 		RoboReference<Object> sensorSetupUnitMockReference = (RoboReference<Object>) sensorSetupUnitMock;
 
 		ServerPathConfig initiatedPostRequest = new ServerPathConfig(pathConfig, sensorSetupUnitMockReference,
@@ -430,10 +447,11 @@ class RoboRequestCallableTests {
 
 		try (FileChannel fileChannel = FileChannel.open(path)) {
 			HttpDecoratedRequest request = getDecoratedRequestByFileChannel(fileChannel);
-			RoboRequestFactory factory = initRoboRequestFactory();
+			final HttpRequestContext httpRequestContext = new HttpRequestContext.Builder().addDecoratedRequest(request)
+					.build(roboContext, serverContext);
 
-			RoboRequestCallable callable = new RoboRequestCallable(roboContext, serverContext, request, factory);
-			HttpResponseProcess process = callable.call();
+			final HttpRequestProcessor processor = new HttpRequestProcessor(httpRequestContext);
+			HttpResponseProcess process = processor.call();
 
 			assertEquals(expectedResponse, process);
 		}
@@ -473,10 +491,4 @@ class RoboRequestCallableTests {
 		ChannelRequestBuffer channelRequestBuffer = new ChannelRequestBuffer();
 		return channelRequestBuffer.getHttpDecoratedRequestByChannel(fileChannel);
 	}
-
-	private RoboRequestFactory initRoboRequestFactory() throws ConfigurationException {
-		CodecRegistry codecRegistry = CodeRegistryUtils.getCodecRegistry(DEFAULT_PACKAGE);
-		return new RoboRequestFactory(codecRegistry);
-	}
-
 }

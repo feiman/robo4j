@@ -46,10 +46,10 @@ import java.util.stream.Collectors;
  * @author Marcus Hirt (@hirt)
  * @author Miro Wengner (@miragemiko)
  */
-public class RoboRequestFactory implements DefaultRequestFactory<Object> {
+class RoboRequestFactory {
 	private final CodecRegistry codecRegistry;
 
-	public RoboRequestFactory(final CodecRegistry codecRegistry) {
+	RoboRequestFactory(final CodecRegistry codecRegistry) {
 		this.codecRegistry = codecRegistry;
 	}
 
@@ -61,8 +61,7 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	 *            robo context
 	 * @return description of desired context
 	 */
-	@Override
-	public Object createRoboContextResponse(RoboContext context) {
+	Object createRoboContextResponse(RoboContext context) {
 		final List<ResponseUnitDTO> units = new LinkedList<>();
 		for (RoboReference<?> rf : context.getUnits()) {
 			units.add(new ResponseUnitDTO(rf.getId(), rf.getState()));
@@ -71,8 +70,8 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		return JsonUtil.toJsonArray(units);
 	}
 
-	@Override
-	public Object createRoboUnitResponse(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfigs) throws InterruptedException, ExecutionException {
+	Object createRoboUnitResponse(RoboReference<?> roboReference, Collection<ServerPathConfig> pathConfigs)
+			throws InterruptedException, ExecutionException {
 		final SocketDecoder<?, ?> decoder = codecRegistry.getDecoder(roboReference.getMessageType());
 
 		final List<ResponseAttributeDTO> attrList = new LinkedList<>();
@@ -97,8 +96,7 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		}
 	}
 
-	@Override
-	public Object createRoboUnitAttributesResponse(RoboReference<?> roboReference, Set<String> requestAttributes)
+	Object createRoboUnitAttributesResponse(RoboReference<?> roboReference, Set<String> requestAttributes)
 			throws InterruptedException, ExecutionException {
 		List<PathAttributeDTO> attributes = new ArrayList<>();
 		for (AttributeDescriptor<?> attr : roboReference.getKnownAttributes()) {
@@ -130,10 +128,9 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 	 *            string message
 	 * @return processed object
 	 */
-	@Override
-	public Object processPost(final RoboReference<?> unitReference, final String message) {
+	Object processPost(final RoboReference<?> unitReference, final String message) {
 		final SocketDecoder<Object, ?> decoder = codecRegistry.getDecoder(unitReference.getMessageType());
-		return decoder == null ? null : decoder.decode(message);
+		return decoder == null || message == null || message.length() == 0 ? null : decoder.decode(message);
 	}
 
 	// TODO: improve
@@ -143,8 +140,8 @@ public class RoboRequestFactory implements DefaultRequestFactory<Object> {
 		final ResponseAttributeDTO attributeDTO = new ResponseAttributeDTO();
 		attributeDTO.setId(ad.getAttributeName());
 		attributeDTO.setType(ad.getAttributeType().getTypeName());
-		if(val instanceof String && !ad.getAttributeName().equals("paths")){
-			attributeDTO.setValue("\""+val+"\"");
+		if (val instanceof String && !ad.getAttributeName().equals(HttpServerUnit.ATTR_PATHS)) {
+			attributeDTO.setValue("\"" + val + "\"");
 		} else {
 			attributeDTO.setValue(val);
 		}

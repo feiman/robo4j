@@ -19,7 +19,6 @@ package com.robo4j.hw.rpi.camera;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 
 /**
  * RaspiDevice gives access to the RaspberryPi
@@ -69,7 +68,7 @@ public class RaspiDevice {
 		final Runtime runtime = Runtime.getRuntime();
 		try {
 			Process process = runtime.exec(command);
-			return getPidOfProcess(process);
+			return process.pid();
 		} catch (IOException e) {
 			throw new CameraClientException("VIDEO GENERATION", e);
 		}
@@ -82,21 +81,5 @@ public class RaspiDevice {
 		} catch (IOException e) {
 			throw new CameraClientException("COMMAND", e);
 		}
-	}
-
-	private static synchronized long getPidOfProcess(Process p) {
-		long pid = -1;
-
-		try {
-			if (p.getClass().getName().equals("java.lang.UNIXProcess")) {
-				Field f = p.getClass().getDeclaredField("pid");
-				f.setAccessible(true);
-				pid = f.getLong(p);
-				f.setAccessible(false);
-			}
-		} catch (Exception e) {
-			pid = -1;
-		}
-		return pid;
 	}
 }

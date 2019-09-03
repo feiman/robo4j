@@ -37,7 +37,7 @@ import com.robo4j.RoboUnit;
 import com.robo4j.configuration.Configuration;
 import com.robo4j.socket.http.channel.InboundDatagramSocketChannelHandler;
 import com.robo4j.socket.http.dto.HttpPathMethodDTO;
-import com.robo4j.socket.http.util.CodeRegistryUtils;
+import com.robo4j.socket.http.util.CodecRegistryUtils;
 import com.robo4j.socket.http.util.DatagramPathUtils;
 import com.robo4j.socket.http.util.JsonUtil;
 import com.robo4j.socket.http.util.RoboHttpUtils;
@@ -71,7 +71,7 @@ public class DatagramServerUnit extends RoboUnit<Object> {
 
 		serverContext.putProperty(PROPERTY_BYTE_BUFFER, ByteBuffer.allocateDirect(bufferCapacity));
 		serverContext.putProperty(PROPERTY_SOCKET_PORT, port);
-		serverContext.putProperty(PROPERTY_CODEC_REGISTRY, CodeRegistryUtils.getCodecRegistry(packages));
+		serverContext.putProperty(PROPERTY_CODEC_REGISTRY, CodecRegistryUtils.init(packages));
 		serverContext.putProperty(PROPERTY_TIMEOUT, timeout);
 	}
 

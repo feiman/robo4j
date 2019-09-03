@@ -17,11 +17,6 @@
 
 package com.robo4j.hw.rpi.imu.bno.shtp;
 
-import com.robo4j.hw.rpi.imu.bno.DeviceChannel;
-import com.robo4j.hw.rpi.imu.bno.DeviceDeviceReport;
-import com.robo4j.hw.rpi.imu.bno.DeviceReport;
-import com.robo4j.hw.rpi.imu.bno.DeviceSensorReport;
-
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -36,15 +31,15 @@ import java.util.Objects;
  * @author Miroslav Wengner (@miragemiko)
  */
 public class ShtpOperationResponse {
-	private final DeviceChannel channel;
+	private final ShtpChannel channel;
 	private final int report;
 	private final int[] values;
 
-	public ShtpOperationResponse(DeviceReport report) {
+	public ShtpOperationResponse(ShtpReportIds report) {
 		this(report.getChannel(), report.getId());
 	}
 
-	public ShtpOperationResponse(DeviceChannel channel, int report, int... array) {
+	public ShtpOperationResponse(ShtpChannel channel, int report, int... array) {
 		this.channel = channel;
 		this.report = report;
 		if (array == null) {
@@ -57,16 +52,16 @@ public class ShtpOperationResponse {
 		}
 	}
 
-	public DeviceChannel getChannel() {
+	public ShtpChannel getChannel() {
 		return channel;
 	}
 
-	public DeviceReport getReport() {
+	public ShtpReportIds getReport() {
 		switch (channel) {
 		case CONTROL:
-			return DeviceDeviceReport.getById(report);
+			return ControlReportId.getById(report);
 		case REPORTS:
-			return DeviceSensorReport.getById(report);
+			return SensorReportId.getById(report);
 		default:
 			return null;
 		}

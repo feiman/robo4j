@@ -12,3 +12,4 @@ branches:
   only:
   - master
   - feature/issue_25_robo4j_http_socket_update
+  - feature/2019CodeOneMaster_issues16_22_25_update

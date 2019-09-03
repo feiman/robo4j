@@ -16,15 +16,12 @@
  */
 package com.robo4j.socket.http.request;
 
-import com.robo4j.RoboContext;
 import com.robo4j.logging.SimpleLoggingUtil;
 import com.robo4j.socket.http.enums.StatusCode;
 import com.robo4j.socket.http.message.HttpDecoratedRequest;
-import com.robo4j.socket.http.units.ServerContext;
 import com.robo4j.socket.http.units.ServerPathConfig;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -32,32 +29,27 @@ import java.util.concurrent.ExecutionException;
 import static com.robo4j.util.Utf8Constant.UTF8_SOLIDUS;
 
 /**
+ * RoboRequestCallable process the incoming request
+ *
  * @author Marcus Hirt (@hirt)
  * @author Miro Wengner (@miragemiko)
  */
+@Deprecated
 public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 
-	private final RoboContext context;
-	private final ServerContext serverContext;
-	private final HttpDecoratedRequest decoratedRequest;
-	private final DefaultRequestFactory<?> factory;
+	private final HttpRequestContext requestContext;
 
-	public RoboRequestCallable(RoboContext context, ServerContext serverContext, HttpDecoratedRequest decoratedRequest,
-			DefaultRequestFactory<Object> factory) {
-		Objects.requireNonNull(context, "not allowed empty context");
-		Objects.requireNonNull(serverContext, "not allowed empty serverContext");
-		this.context = context;
-		this.serverContext = serverContext;
-		this.decoratedRequest = decoratedRequest;
-		this.factory = factory;
+	public RoboRequestCallable(final HttpRequestContext requestContext) {
+		this.requestContext = requestContext;
 	}
 
 	@Override
 	public HttpResponseProcess call() throws Exception {
 
 		final HttpResponseProcessBuilder resultBuilder = HttpResponseProcessBuilder.Builder();
+		final HttpDecoratedRequest decoratedRequest = requestContext.decoratedRequest();
 		final ServerPathConfig requestPathConfig = decoratedRequest == null ? null
-				: serverContext.getPathConfig(decoratedRequest.getPathMethod());
+				: requestContext.serverContext().getPathConfig(decoratedRequest.getPathMethod());
 
 		if (isValidRequest(requestPathConfig)) {
 			resultBuilder.addMethod(requestPathConfig.getMethod());
@@ -86,7 +78,8 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 		switch (requestPathConfig.getMethod()) {
 		case GET:
 			if (requestPathConfig.getPath().equals(UTF8_SOLIDUS)) {
-				resultBuilder.addResult(factory.createRoboContextResponse(context));
+				resultBuilder.addResult(
+						requestContext.requestFactory().createRoboContextResponse(requestContext.roboContext()));
 			} else {
 				resultBuilder.addTarget(requestPathConfig.getRoboUnit());
 				final Object getResult = extractGetRequestResult(requestPathConfig);
@@ -99,7 +92,8 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 			if (requestPathConfig.getPath().equals(UTF8_SOLIDUS)) {
 				resultBuilder.addCode(StatusCode.BAD_REQUEST);
 			} else {
-				final Object respObj = factory.processPost(requestPathConfig.getRoboUnit(), decoratedRequest.getMessage());
+				final Object respObj = requestContext.requestFactory().processPost(requestPathConfig.getRoboUnit(),
+						requestContext.decoratedRequest().getMessage());
 				if (respObj == null) {
 					resultBuilder.addCode(StatusCode.BAD_REQUEST);
 				} else {
@@ -110,7 +104,8 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 			break;
 		default:
 			resultBuilder.addCode(StatusCode.NOT_IMPLEMENTED);
-			SimpleLoggingUtil.debug(getClass(), "not implemented method: " + decoratedRequest.getPathMethod());
+			SimpleLoggingUtil.debug(getClass(),
+					"not implemented method: " + requestContext.decoratedRequest().getPathMethod());
 		}
 	}
 
@@ -127,18 +122,20 @@ public class RoboRequestCallable implements Callable<HttpResponseProcess> {
 	 */
 	private Object extractGetRequestResult(ServerPathConfig requestPathConfig)
 			throws InterruptedException, ExecutionException {
-		final Set<String> requestAttributes = decoratedRequest.getPathAttributes();
+		final Set<String> requestAttributes = requestContext.decoratedRequest().getPathAttributes();
 		if (requestAttributes.isEmpty()) {
-			Collection<ServerPathConfig> pathConfigs = serverContext
-					.getPathConfigByPath(decoratedRequest.getPathMethod().getPath());
-			return factory.createRoboUnitResponse(requestPathConfig.getRoboUnit(), pathConfigs);
+			Collection<ServerPathConfig> pathConfigs = requestContext.serverContext()
+					.getPathConfigByPath(requestContext.decoratedRequest().getPathMethod().getPath());
+			return requestContext.requestFactory().createRoboUnitResponse(requestPathConfig.getRoboUnit(), pathConfigs);
 		} else {
-			return factory.createRoboUnitAttributesResponse(requestPathConfig.getRoboUnit(), requestAttributes);
+			return requestContext.requestFactory().createRoboUnitAttributesResponse(requestPathConfig.getRoboUnit(),
+					requestAttributes);
 		}
 	}
 
 	private boolean isValidRequest(ServerPathConfig pathConfig) {
-		return pathConfig != null && decoratedRequest != null && decoratedRequest.getPathMethod() != null;
+		return pathConfig != null && requestContext.decoratedRequest() != null
+				&& requestContext.decoratedRequest().getPathMethod() != null;
 	}
 
 }
