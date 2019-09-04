@@ -40,9 +40,9 @@ class CameraCodecTests {
 
 	@Test
 	void cameraConfigCodecTest() {
-		String properJson = "{\"height\":800,\"width\":600,\"brightness\":80,\"sharpness\":56,\"timeout\":2,\"timelapse\":100}";
-		String desiredJson = "{\"height\":800 ,\"width\" :600,\"brightness\":80,\"sharpness\":56,\"timeout\":2,\"timelapse\":100}";
-		CameraConfigMessage message = new CameraConfigMessage(800, 600, 80, 56, 2, 100);
+		String properJson = "{\"height\":800,\"width\":600,\"rotation\":0,\"brightness\":80,\"sharpness\":56,\"timeout\":2,\"timelapse\":100}";
+		String desiredJson = "{\"height\":800 ,\"width\" :600,\"rotation\":0,\"brightness\":80,\"sharpness\":56,\"timeout\":2,\"timelapse\":100}";
+		CameraConfigMessage message = new CameraConfigMessage(800, 600,0, 80, 56, 2, 100);
 
 		String encodeJson = codec.encode(message);
 
@@ -54,9 +54,9 @@ class CameraCodecTests {
 
 	@Test
 	void cameraConfigCodecRandomOrderTest() {
-		String properOrderJson = "{\"height\":800,\"width\":600,\"brightness\":80,\"sharpness\":56,\"timeout\":2,\"timelapse\":100}";
-		String inputOrderJson = "{\"height\":800 , \"width\":600,\"brightness\":80,\"sharpness\" : 56,\"timeout\" :2,\"timelapse\": 100}";
-		CameraConfigMessage message = new CameraConfigMessage(800, 600, 80, 56, 2, 100);
+		String properOrderJson = "{\"height\":800,\"width\":600,\"rotation\":180,\"brightness\":80,\"sharpness\":56,\"timeout\":2,\"timelapse\":100}";
+		String inputOrderJson = "{\"height\":800 , \"width\":600,\"rotation\":180,\"brightness\":80,\"sharpness\" : 56,\"timeout\" :2,\"timelapse\": 100}";
+		CameraConfigMessage message = new CameraConfigMessage(800, 600, 180,80, 56, 2, 100);
 
 		String encodeJson = codec.encode(message);
 

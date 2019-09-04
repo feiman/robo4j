@@ -29,6 +29,7 @@ public class CameraConfigMessage implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Integer height;
 	private Integer width;
+	private Integer rotation;
 	private Integer brightness;
 	private Integer sharpness;
 	private Integer timeout;
@@ -37,10 +38,11 @@ public class CameraConfigMessage implements Serializable {
 	public CameraConfigMessage() {
 	}
 
-	public CameraConfigMessage(Integer height, Integer width, Integer brightness, Integer sharpness, Integer timeout,
+	public CameraConfigMessage(Integer height, Integer width, Integer rotation, Integer brightness, Integer sharpness, Integer timeout,
 			Integer timelapse) {
 		this.height = height;
 		this.width = width;
+		this.rotation = rotation;
 		this.brightness = brightness;
 		this.sharpness = sharpness;
 		this.timeout = timeout;
@@ -61,6 +63,14 @@ public class CameraConfigMessage implements Serializable {
 
 	public void setWidth(Integer width) {
 		this.width = width;
+	}
+
+	public Integer getRotation() {
+		return rotation;
+	}
+
+	public void setRotation(Integer rotation) {
+		this.rotation = rotation;
 	}
 
 	public Integer getBrightness() {
@@ -97,25 +107,33 @@ public class CameraConfigMessage implements Serializable {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		CameraConfigMessage message = (CameraConfigMessage) o;
-		return Objects.equals(height, message.height) && Objects.equals(width, message.width)
-				&& Objects.equals(brightness, message.brightness) && Objects.equals(sharpness, message.sharpness)
-				&& Objects.equals(timeout, message.timeout) && Objects.equals(timelapse, message.timelapse);
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CameraConfigMessage that = (CameraConfigMessage) o;
+		return Objects.equals(height, that.height) &&
+				Objects.equals(width, that.width) &&
+				Objects.equals(rotation, that.rotation) &&
+				Objects.equals(brightness, that.brightness) &&
+				Objects.equals(sharpness, that.sharpness) &&
+				Objects.equals(timeout, that.timeout) &&
+				Objects.equals(timelapse, that.timelapse);
 	}
 
 	@Override
 	public int hashCode() {
-
-		return Objects.hash(height, width, brightness, sharpness, timeout, timelapse);
+		return Objects.hash(height, width, rotation, brightness, sharpness, timeout, timelapse);
 	}
 
 	@Override
 	public String toString() {
-		return "CameraConfigMessage{" + "height=" + height + ", width=" + width + ", brightness=" + brightness
-				+ ", sharpness=" + sharpness + ", timeout=" + timeout + ", timelapse=" + timelapse + '}';
+		return "CameraConfigMessage{" +
+				"height=" + height +
+				", width=" + width +
+				", rotation=" + rotation +
+				", brightness=" + brightness +
+				", sharpness=" + sharpness +
+				", timeout=" + timeout +
+				", timelapse=" + timelapse +
+				'}';
 	}
 }
