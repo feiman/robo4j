@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Observing Logitech F710 Pad buttons and joystick behaviour and notifying
@@ -37,6 +38,10 @@ public class LF710ButtonObserver {
 	private final RoboControlPad pad;
 
 	private class ButtonChecker implements Runnable {
+		/**
+		 * {@link LF710Pad} may cause an exception during the initiation
+		 */
+		private static final int EXCEPTION_COUNTER_MAX = 1;
 		private static final int ANDING_LEFT = 0x00ff;
 		private static final int ANDING_LONG_LEFT = 0x00000000000000ff;
 		private static final int BUFFER_SIZE = 8;
@@ -50,7 +55,7 @@ public class LF710ButtonObserver {
 		private static final int INDEX_ELEMENT = 7;
 		private final byte[] buffer = new byte[BUFFER_SIZE];
 		private final InputStream source;
-
+		private final AtomicInteger exceptionsCounter = new AtomicInteger();
 		ButtonChecker(InputStream source) {
 			this.source = source;
 		}
@@ -86,7 +91,11 @@ public class LF710ButtonObserver {
 						}
 					}
 				} catch (IOException e) {
-					throw new LF710Exception("gamepad reading problem", e);
+					if(exceptionsCounter.getAndIncrement() <= EXCEPTION_COUNTER_MAX) {
+						System.out.println(String.format("%s init exception: %s",getClass().getSimpleName(), e.getMessage()));
+					} else {
+						throw new LF710Exception("gamepad reading problem", e);
+					}
 				}
 			}
 			pad.disconnect();
